@@ -1,0 +1,2 @@
+machine_id,owner,cpu_model,cpu_cores_physical,cpu_cores_logical,cpu_base_clock_mhz,ram_total_bytes,gpu_model,gpu_dedicated,gpu_vram_bytes,os_name,os_version,os_build,notes
+m01,qnicondavid,Intel(R) Core(TM) Ultra 9 285H,16,16,2900,33685749760,Intel(R) Arc(TM) 140T GPU (16GB),false,17179869184,Microsoft Windows 11 Pro,10.0.26200,26200,"Integrated GPU sharing system RAM; vram taken from device name because AdapterRAM reported 2147479552."
