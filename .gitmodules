@@ -1,0 +1,4 @@
+[submodule "external/ml-agents"]
+	path = external/ml-agents
+	url = https://github.com/qnicondavid/ml-agents.git
+	ignore = untracked
