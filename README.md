@@ -54,3 +54,11 @@ Wait for `Start training by pressing the Play button`, then press Play in Unity.
 ```powershell
 tensorboard --logdir results
 ```
+
+## Logging training run
+First Install: 
+python -m pip install psutil PyYAML
+
+From unity-agents repository, run:
+python tools/run_logger.py --config <path-to-config.yaml> --run-id <unique-run-id>, replacing the config path and run ID with the environment and experiment id you want to log. 
+
