@@ -13,6 +13,7 @@ docs/
   shared-data/   analysis of last year's group datasets
   resources/     official materials
 tools/           scripts
+analysis/        ML code and its pinned requirements
 external/
   ml-agents/     our ML-Agents fork
 ```
@@ -70,5 +71,24 @@ tensorboard --logdir results
 
    Replace `<path-to-config.yaml>` with the path to the configuration file and `<unique-run-id>` with a unique identifier for the experiment run you want to log.
 
+## Analysis environment
 
+1) Create the environment in the repository root:
+
+   ```powershell
+   C:\path\to\python314\python.exe -m venv .venv
+   ```
+
+2) Activate it (needed in every new terminal):
+
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+3) Install the pinned packages:
+
+   ```powershell
+   python -m pip install -r analysis\requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+   ```
 
