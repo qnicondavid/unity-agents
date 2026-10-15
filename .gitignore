@@ -5,3 +5,4 @@ survey_out/
 # Python
 __pycache__/
 *.pyc
+.venv/
