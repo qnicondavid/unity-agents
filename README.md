@@ -14,19 +14,27 @@ docs/
   resources/     official materials
 tools/           scripts
 analysis/        ML code and its pinned requirements
+data/            datasets built by the analysis scripts
 external/
   ml-agents/     our ML-Agents fork
+  BCS2720-project-data-collection/   the course's shared group data
 ```
 
 ## Setup
 
-1) Clone with the submodule:
+1) Clone with the submodules:
 
    ```powershell
    git clone --recurse-submodules https://github.com/qnicondavid/unity-agents.git
    ```
 
-2) Create the virtual environment (Python 3.10) inside the submodule:
+   If you cloned before the data submodule was added, fetch it with:
+
+   ```powershell
+   git submodule update --init
+   ```
+
+2) Create the virtual environment (Python 3.10) inside the ML-Agents submodule:
 
    ```powershell
    cd external\ml-agents
@@ -55,7 +63,8 @@ Wait for `Start training by pressing the Play button`, then press Play in Unity.
 ```powershell
 tensorboard --logdir results
 ```
-## Logging Training Run**
+
+## Logging Training Run
 
 1. First-time setup: install the required dependencies.
 
@@ -92,3 +101,22 @@ tensorboard --logdir results
    python -m pip install -r analysis\requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
    ```
 
+## Building the Group 15 dataset
+
+`analysis/group15.py` reads `Group15_data.7z` from the data submodule and writes `data/group15.csv`: one row per PPO run on 3DBall with a budget of 500k, 1M or 2M steps (1,555 runs).
+
+From the repository root, with `.venv` active:
+
+```powershell
+python analysis\group15.py
+```
+
+Each row has the run's 12 PPO settings, its budget (`max_steps`), the machine it ran on and three outcome columns:
+
+- `last_logged_step`: the last step the run logged
+- `reached_95`: whether the mean reward reached 95 within the budget; empty if the run stopped early without reaching it
+- `steps_to_95`: the first logged step with a mean reward of 95 or more; empty otherwise
+
+The CSV is committed. Rerunning the script should leave `git diff` empty.
+
+Data: Group 15 (AY 2025-2026), from the course's shared data repository (Apache License 2.0).
