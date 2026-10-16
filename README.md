@@ -1,7 +1,19 @@
 # unity-agents
 
-M2-1: AI and Machine Learning (2026-2027-002-BCS2720). A work in progress.
+Can PPO hyperparameters predict how many training steps a Unity ML-Agents run needs to reach a mean reward threshold? Group 10, BCS2720 Project 2-1 (AI and Machine Learning), Maastricht University. A work in progress.
 
+## Contents
+
+- [Layout](#layout)
+- [Getting the code](#getting-the-code)
+- [Training runs](#training-runs)
+  - [Setup](#setup)
+  - [Running a training run](#running-a-training-run)
+  - [Viewing results in TensorBoard](#viewing-results-in-tensorboard)
+  - [Logging a training run](#logging-a-training-run)
+- [Analysis](#analysis)
+  - [Environment](#environment)
+  - [Building the Group 15 dataset](#building-the-group-15-dataset)
 
 ## Layout
 
@@ -20,21 +32,25 @@ external/
   BCS2720-project-data-collection/   the course's shared group data
 ```
 
-## Setup
+## Getting the code
 
-1) Clone with the submodules:
+Clone with the submodules:
 
-   ```powershell
-   git clone --recurse-submodules https://github.com/qnicondavid/unity-agents.git
-   ```
+```powershell
+git clone --recurse-submodules https://github.com/qnicondavid/unity-agents.git
+```
 
-   If you cloned before the data submodule was added, fetch it with:
+If you cloned before the data submodule was added, fetch it with:
 
-   ```powershell
-   git submodule update --init
-   ```
+```powershell
+git submodule update --init
+```
 
-2) Create the virtual environment (Python 3.10) inside the ML-Agents submodule:
+## Training runs
+
+### Setup
+
+1) Create the virtual environment (Python 3.10) inside the ML-Agents submodule:
 
    ```powershell
    cd external\ml-agents
@@ -45,9 +61,9 @@ external/
    pip install -e .\ml-agents
    ```
 
-3) Unity: open `external\ml-agents\Project` with editor **2022.3.4f1**.
+2) Unity: open `external\ml-agents\Project` with editor **2022.3.4f1**.
 
-## Running a training run
+### Running a training run
 
 ```powershell
 cd external\ml-agents
@@ -58,13 +74,13 @@ mlagents-learn config/ppo/3DBall.yaml --run-id=<name>
 
 Wait for `Start training by pressing the Play button`, then press Play in Unity.
 
-## Results
+### Viewing results in TensorBoard
 
 ```powershell
 tensorboard --logdir results
 ```
 
-## Logging Training Run
+### Logging a training run
 
 1. First-time setup: install the required dependencies.
 
@@ -80,7 +96,9 @@ tensorboard --logdir results
 
    Replace `<path-to-config.yaml>` with the path to the configuration file and `<unique-run-id>` with a unique identifier for the experiment run you want to log.
 
-## Analysis environment
+## Analysis
+
+### Environment
 
 1) Create the environment in the repository root:
 
@@ -101,7 +119,7 @@ tensorboard --logdir results
    python -m pip install -r analysis\requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
    ```
 
-## Building the Group 15 dataset
+### Building the Group 15 dataset
 
 `analysis/group15.py` reads `Group15_data.7z` from the data submodule and writes `data/group15.csv`: one row per PPO run on 3DBall with a budget of 500k, 1M or 2M steps (1,555 runs).
 
