@@ -1,0 +1,33 @@
+data = "data/group15.csv"
+class_attribute = "reached_95"
+split_by = "max_steps"
+features = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+]
+group_by = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+    "beta",
+    "epsilon",
+    "lambd",
+    "num_epoch",
+    "time_horizon",
+    "learning_rate_schedule",
+    "normalize",
+]
+
+[forest]
+trees = 50
+attributes_per_tree = 3
+seed = 1
+
+[cross_validation]
+folds = 10
+seed = 7
