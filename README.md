@@ -15,6 +15,7 @@ Can PPO hyperparameters predict how many training steps a Unity ML-Agents run ne
   - [Environment](#environment)
   - [Building the Group 15 dataset](#building-the-group-15-dataset)
   - [Running the forest](#running-the-forest)
+  - [Tuning the forest](#tuning-the-forest)
 
 ## Layout
 
@@ -165,3 +166,23 @@ A config sets:
 To run a new experiment, add a config file. The two in `analysis/configs/forest/` predict `reached_95` from the plan's 5 settings and from all 12.
 
 The results go to `analysis/results/forest/<config name>/`: `folds.csv` has both forests' balanced accuracy on each fold, and `confusion.csv` has our forest's confusion matrix for each value of `split_by`. Always predicting the more common class gives a balanced accuracy of 0.5.
+
+### Tuning the forest
+
+`analysis/tune_forest.py` tries every combination of the settings listed in a config's `[tuning]` table, separately for each value of `split_by`. It picks the combination with the best mean balanced accuracy on a grouped cross-validation, then reports that choice on fresh folds that were not used for choosing.
+
+From the repository root, with `.venv` active:
+
+```powershell
+python analysis\tune_forest.py --config analysis\configs\forest\reached_95_12_settings.toml
+```
+
+It uses every CPU core; `--workers` sets a lower number.
+
+The `[tuning]` table sets:
+
+- `folds` and `seed`: the cross-validation used for choosing
+- `report_folds` and `report_seed`: the fresh cross-validation used for reporting
+- `trees`, `attributes_per_tree` and `max_depth`: the values to try, with `"none"` for no depth limit
+
+The results go to `analysis/results/forest/<config name>/tuned_best_mean/`: `candidates.csv` has every combination's tuning score and rank, `summary.csv` the chosen setting with its tuning and report scores, and `folds.csv` and `confusion.csv` the report run. `tuned_two_se/` holds the first tuning run, which used the practical's tie rule (within two standard errors of the best, the simplest wins) on a 5-fold cross-validation; on our data that rule chose forests that were too shallow.
