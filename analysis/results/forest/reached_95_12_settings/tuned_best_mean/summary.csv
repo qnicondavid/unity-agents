@@ -1,0 +1,4 @@
+max_steps,trees,attributes_per_tree,max_depth,tuning_balanced_accuracy,tuning_se,forest_balanced_accuracy,forest_se,scikit_learn_balanced_accuracy,scikit_learn_se
+500000,50,10,12,0.890836,0.019785,0.89307,0.017422,0.886867,0.017641
+1000000,25,8,8,0.900008,0.01329,0.885842,0.019577,0.907639,0.012068
+2000000,50,12,8,0.804844,0.01955,0.794607,0.021291,0.796188,0.017893
