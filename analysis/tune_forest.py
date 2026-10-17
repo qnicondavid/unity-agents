@@ -33,10 +33,9 @@ def simplicity(candidate: dict) -> tuple:
     return (float("inf") if depth is None else depth, candidate["attributes_per_tree"], -candidate["trees"])
 
 
-def choose(scored: list[dict]) -> tuple[dict, list[dict], dict]:
-    best = max(scored, key=lambda c: c["mean"])
-    tied = [c for c in scored if c["mean"] >= best["mean"] - 2 * best["se"]]
-    return best, tied, min(tied, key=simplicity)
+def choose(scored: list[dict]) -> dict:
+    top = max(c["mean"] for c in scored)
+    return min((c for c in scored if c["mean"] == top), key=simplicity)
 
 
 def with_settings(config: dict, candidate: dict) -> dict:
@@ -44,7 +43,8 @@ def with_settings(config: dict, candidate: dict) -> dict:
                 "seed": config["forest"]["seed"]}
     if candidate["max_depth"] is not None:
         settings["max_depth"] = candidate["max_depth"]
-    return {**config, "forest": settings}
+    report = {"folds": config["tuning"]["report_folds"], "seed": config["tuning"]["report_seed"]}
+    return {**config, "forest": settings, "cross_validation": report}
 
 
 def tune(config: dict, workers: int) -> list[tuple]:
@@ -77,8 +77,9 @@ def tune(config: dict, workers: int) -> list[tuple]:
 def write_tuning(config: dict, outcomes: list, folder: Path) -> None:
     split_by = config["split_by"]
     candidate_rows, summary_rows = [], []
-    for value, scored, best, tied, chosen, result in outcomes:
-        for c in scored:
+    for value, scored, chosen, result in outcomes:
+        ranks = pd.Series([c["mean"] for c in scored]).rank(ascending=False, method="min").astype(int)
+        for c, rank in zip(scored, ranks):
             candidate_rows.append({
                 split_by: value,
                 "trees": c["trees"],
@@ -86,8 +87,7 @@ def write_tuning(config: dict, outcomes: list, folder: Path) -> None:
                 "max_depth": "none" if c["max_depth"] is None else c["max_depth"],
                 "tuning_balanced_accuracy": round(c["mean"], 6),
                 "tuning_se": round(c["se"], 6),
-                "best": c is best,
-                "tied": any(c is t for t in tied),
+                "rank": rank,
                 "chosen": c is chosen,
             })
         own, own_se = mean_and_se(result["forest"])
@@ -97,7 +97,6 @@ def write_tuning(config: dict, outcomes: list, folder: Path) -> None:
             "trees": chosen["trees"],
             "attributes_per_tree": chosen["attributes_per_tree"],
             "max_depth": "none" if chosen["max_depth"] is None else chosen["max_depth"],
-            "tied_candidates": len(tied),
             "tuning_balanced_accuracy": round(chosen["mean"], 6),
             "tuning_se": round(chosen["se"], 6),
             "forest_balanced_accuracy": round(own, 6),
@@ -118,18 +117,17 @@ def main(argv: list[str] | None = None) -> int:
     config = read_config(args.config)
     outcomes = []
     for value, rows, labels, groups, scored in tune(config, args.workers):
-        best, tied, chosen = choose(scored)
+        chosen = choose(scored)
         result = evaluate(rows, labels, groups, with_settings(config, chosen))
-        outcomes.append((value, scored, best, tied, chosen, result))
+        outcomes.append((value, scored, chosen, result))
         own, own_se = mean_and_se(result["forest"])
         ref, ref_se = mean_and_se(result["scikit_learn"])
         depth = "none" if chosen["max_depth"] is None else chosen["max_depth"]
         print(f"{config['split_by']} = {value}: chose {chosen['trees']} trees, m = {chosen['attributes_per_tree']}, "
-              f"depth {depth} ({len(tied)} of {len(scored)} candidates tied with the best, "
-              f"{best['mean']:.3f}) | tuning {chosen['mean']:.3f} (se {chosen['se']:.3f}) | "
+              f"depth {depth} (best of {len(scored)}) | tuning {chosen['mean']:.3f} (se {chosen['se']:.3f}) | "
               f"report: forest {own:.3f} (se {own_se:.3f}), scikit-learn {ref:.3f} (se {ref_se:.3f})")
 
-    folder = write_results("tuned", config["split_by"], [(o[0], o[5]) for o in outcomes],
+    folder = write_results("tuned_best_mean", config["split_by"], [(o[0], o[3]) for o in outcomes],
                            RESULTS / args.config.stem)
     write_tuning(config, outcomes, folder)
     print(f"results written to {folder}")
