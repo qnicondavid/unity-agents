@@ -14,6 +14,7 @@ Can PPO hyperparameters predict how many training steps a Unity ML-Agents run ne
 - [Analysis](#analysis)
   - [Environment](#environment)
   - [Building the Group 15 dataset](#building-the-group-15-dataset)
+  - [Running the forest](#running-the-forest)
 
 ## Layout
 
@@ -26,6 +27,8 @@ docs/
   resources/     official materials
 tools/           scripts
 analysis/        ML code and its pinned requirements
+  configs/       experiment settings, one TOML file per experiment
+  results/       what each experiment wrote
 data/            datasets built by the analysis scripts
 external/
   ml-agents/     our ML-Agents fork
@@ -138,3 +141,27 @@ Each row has the run's 12 PPO settings, its budget (`max_steps`), the machine it
 The CSV is committed. Rerunning the script should leave `git diff` empty.
 
 Data: Group 15 (AY 2025-2026), from the course's shared data repository (Apache License 2.0).
+
+### Running the forest
+
+`analysis/run_forest.py` cross-validates our ID3 forest (`analysis/forest.py`) on the dataset a config file names. It also runs scikit-learn's forest on the same folds, as a check.
+
+From the repository root, with `.venv` active:
+
+```powershell
+python analysis\run_forest.py --config analysis\configs\forest\reached_95_12_settings.toml
+```
+
+A config sets:
+
+- `data`: the CSV, relative to the repository root
+- `class_attribute`: the column to predict
+- `features`: the columns the forest learns from
+- `split_by`: the column whose values each get their own cross-validation (`max_steps` in our configs, so one per budget)
+- `group_by`: the columns that make up a configuration; runs with the same values always share a fold
+- `[forest]`: `trees`, `attributes_per_tree` (at most the number of features), `seed`, and optionally `max_depth` (no limit if it is left out)
+- `[cross_validation]`: `folds` (at most the number of configurations) and `seed`
+
+To run a new experiment, add a config file. The two in `analysis/configs/forest/` predict `reached_95` from the plan's 5 settings and from all 12.
+
+The results go to `analysis/results/forest/<config name>/`: `folds.csv` has both forests' balanced accuracy on each fold, and `confusion.csv` has our forest's confusion matrix for each value of `split_by`. Always predicting the more common class gives a balanced accuracy of 0.5.
