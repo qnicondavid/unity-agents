@@ -7,7 +7,8 @@ from pathlib import Path
 import pandas as pd
 
 import forest
-from run_forest import RESULTS, evaluate, load_groups, mean_and_se, read_config, write_results
+from run_forest import (RESULTS, evaluate, load_groups, mean_and_se, print_breakdown, read_config,
+                        split_column, write_results)
 
 
 def candidates(config: dict) -> list[dict]:
@@ -59,7 +60,7 @@ def tune(config: dict, workers: int) -> list[tuple]:
     splits = load_groups(config)
     jobs = []
     with ProcessPoolExecutor(max_workers=workers) as pool:
-        for value, rows, labels, groups in splits:
+        for value, rows, labels, groups, _ in splits:
             if tuning["folds"] > len(set(groups)):
                 raise ValueError(f"{tuning['folds']} tuning folds, but only {len(set(groups))} configurations")
             folds = forest.make_group_folds(groups, tuning["folds"], tuning["seed"])
@@ -71,11 +72,12 @@ def tune(config: dict, workers: int) -> list[tuple]:
             scored.setdefault(value, []).append({**candidate, "mean": mean, "se": se})
             if done % 50 == 0 or done == len(jobs):
                 print(f"{done} of {len(jobs)} candidate runs done", flush=True)
-    return [(value, rows, labels, groups, scored[value]) for value, rows, labels, groups in splits]
+    return [(value, rows, labels, groups, reports, scored[value])
+            for value, rows, labels, groups, reports in splits]
 
 
 def write_tuning(config: dict, outcomes: list, folder: Path) -> None:
-    split_by = config["split_by"]
+    split_by = split_column(config)
     candidate_rows, summary_rows = [], []
     for value, scored, chosen, result in outcomes:
         ranks = pd.Series([c["mean"] for c in scored]).rank(ascending=False, method="min").astype(int)
@@ -115,20 +117,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     config = read_config(args.config)
+    split_by = split_column(config)
+    report_by = config.get("report_by")
     outcomes = []
-    for value, rows, labels, groups, scored in tune(config, args.workers):
+    for value, rows, labels, groups, reports, scored in tune(config, args.workers):
         chosen = choose(scored)
-        result = evaluate(rows, labels, groups, with_settings(config, chosen))
+        result = evaluate(rows, labels, groups, with_settings(config, chosen), reports)
         outcomes.append((value, scored, chosen, result))
         own, own_se = mean_and_se(result["forest"])
         ref, ref_se = mean_and_se(result["scikit_learn"])
         depth = "none" if chosen["max_depth"] is None else chosen["max_depth"]
-        print(f"{config['split_by']} = {value}: chose {chosen['trees']} trees, m = {chosen['attributes_per_tree']}, "
+        print(f"{split_by} = {value}: chose {chosen['trees']} trees, m = {chosen['attributes_per_tree']}, "
               f"depth {depth} (best of {len(scored)}) | tuning {chosen['mean']:.3f} (se {chosen['se']:.3f}) | "
               f"report: forest {own:.3f} (se {own_se:.3f}), scikit-learn {ref:.3f} (se {ref_se:.3f})")
+        print_breakdown(report_by, result)
 
-    folder = write_results("tuned_best_mean", config["split_by"], [(o[0], o[3]) for o in outcomes],
-                           RESULTS / args.config.stem)
+    folder = write_results("tuned_best_mean", split_by, [(o[0], o[3]) for o in outcomes],
+                           RESULTS / args.config.stem, report_by)
     write_tuning(config, outcomes, folder)
     print(f"results written to {folder}")
     return 0

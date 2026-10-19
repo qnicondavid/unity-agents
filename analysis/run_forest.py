@@ -20,6 +20,10 @@ def read_config(path: Path) -> dict:
     return config
 
 
+def split_column(config: dict) -> str:
+    return config.get("split_by", "split")
+
+
 def encode(column: pd.Series) -> pd.Series:
     if pd.api.types.is_numeric_dtype(column) and not pd.api.types.is_bool_dtype(column):
         return column.astype(float)
@@ -35,17 +39,45 @@ def load_groups(config: dict) -> list[tuple]:
         raise ValueError("some features have missing values")
 
     features = pd.DataFrame({name: encode(data[name]) for name in config["features"]})
+    split_by = config.get("split_by")
+    report_by = config.get("report_by")
+    values = sorted(data[split_by].unique().tolist()) if split_by else ["all"]
     ans = []
-    for value in sorted(data[config["split_by"]].unique().tolist()):
-        part = data[config["split_by"]] == value
+    for value in values:
+        part = data[split_by] == value if split_by else pd.Series(True, index=data.index)
         rows = features[part].values.tolist()
         labels = data.loc[part, config["class_attribute"]].astype(str).tolist()
         groups = [tuple(g) for g in data.loc[part, config["group_by"]].astype(str).values.tolist()]
-        ans.append((value, rows, labels, groups))
+        reports = data.loc[part, report_by].tolist() if report_by else None
+        ans.append((value, rows, labels, groups, reports))
     return ans
 
 
-def evaluate(rows: list, labels: list, groups: list, config: dict) -> dict:
+def fold_scores(labels: list, predicted: list, folds: list) -> list[float]:
+    return [forest.balanced_accuracy([labels[p] for p in fold], [predicted[p] for p in fold])
+            for fold in folds]
+
+
+def breakdown(labels: list, own_predictions: list, reference_predictions: list, folds: list,
+              reports: list) -> dict:
+    ans = {}
+    for value in sorted(set(reports)):
+        part = [[p for p in fold if reports[p] == value] for fold in folds]
+        if not all(part):
+            raise ValueError(f"a test fold has no runs with the report value {value}")
+        inside = [p for fold in part for p in fold]
+        ans[value] = {
+            "fold_sizes": [len(fold) for fold in part],
+            "forest": fold_scores(labels, own_predictions, part),
+            "scikit_learn": fold_scores(labels, reference_predictions, part),
+            "confusion": forest.confusion_matrix([labels[p] for p in inside],
+                                                 [own_predictions[p] for p in inside]),
+        }
+    return ans
+
+
+def evaluate(rows: list, labels: list, groups: list, config: dict,
+             reports: list | None = None) -> dict:
     settings = config["forest"]
     cv = config["cross_validation"]
     m = settings["attributes_per_tree"]
@@ -64,7 +96,7 @@ def evaluate(rows: list, labels: list, groups: list, config: dict) -> dict:
     _, own, predictions = forest.cross_validation(rows, labels, folds, train, forest.predict_forest)
 
     X, y = np.array(rows), np.array(labels)
-    reference = []
+    reference, reference_predictions = [], [None] * len(rows)
     for f in range(len(folds)):
         training = [pos for j in range(len(folds)) if j != f for pos in folds[j]]
         model = RandomForestClassifier(n_estimators=settings["trees"], max_features=m,
@@ -73,27 +105,30 @@ def evaluate(rows: list, labels: list, groups: list, config: dict) -> dict:
         model.fit(X[training], y[training])
         predicted = model.predict(X[folds[f]]).tolist()
         reference.append(forest.balanced_accuracy(y[folds[f]].tolist(), predicted))
+        for pos, label in zip(folds[f], predicted):
+            reference_predictions[pos] = label
 
-    return {
+    result = {
         "fold_sizes": [len(fold) for fold in folds],
         "forest": own,
         "scikit_learn": reference,
         "confusion": forest.confusion_matrix(labels, predictions),
     }
+    if reports is not None:
+        result["by"] = breakdown(labels, predictions, reference_predictions, folds, reports)
+    return result
 
 
 def mean_and_se(scores: list) -> tuple[float, float]:
     return float(np.mean(scores)), float(np.std(scores, ddof=1) / np.sqrt(len(scores)))
 
 
-def write_results(name: str, split_by: str, results: list, folder: Path) -> Path:
-    out = folder / name
-    out.mkdir(parents=True, exist_ok=True)
+def write_tables(out: Path, suffix: str, entries: list) -> None:
     fold_rows, confusion_rows = [], []
-    for value, result in results:
+    for keys, result in entries:
         for f in range(len(result["fold_sizes"])):
             fold_rows.append({
-                split_by: value,
+                **keys,
                 "fold": f + 1,
                 "test_runs": result["fold_sizes"][f],
                 "forest_balanced_accuracy": round(result["forest"][f], 6),
@@ -101,11 +136,31 @@ def write_results(name: str, split_by: str, results: list, folder: Path) -> Path
             })
         for true_label, row in result["confusion"].items():
             for predicted_label, count in row.items():
-                confusion_rows.append({split_by: value, "true": true_label,
+                confusion_rows.append({**keys, "true": true_label,
                                        "predicted": predicted_label, "count": count})
-    pd.DataFrame(fold_rows).to_csv(out / "folds.csv", index=False, lineterminator="\n")
-    pd.DataFrame(confusion_rows).to_csv(out / "confusion.csv", index=False, lineterminator="\n")
+    pd.DataFrame(fold_rows).to_csv(out / f"folds{suffix}.csv", index=False, lineterminator="\n")
+    pd.DataFrame(confusion_rows).to_csv(out / f"confusion{suffix}.csv", index=False, lineterminator="\n")
+
+
+def write_results(name: str, split_by: str, results: list, folder: Path,
+                  report_by: str | None = None) -> Path:
+    out = folder / name
+    out.mkdir(parents=True, exist_ok=True)
+    write_tables(out, "", [({split_by: value}, result) for value, result in results])
+    if report_by:
+        parts = [({split_by: value, report_by: key}, part)
+                 for value, result in results for key, part in result["by"].items()]
+        write_tables(out, f"_by_{report_by}", parts)
     return out
+
+
+def print_breakdown(report_by: str | None, result: dict) -> None:
+    for value, part in result.get("by", {}).items():
+        counts = ", ".join(f"{label} {sum(row.values())}" for label, row in part["confusion"].items())
+        own, own_se = mean_and_se(part["forest"])
+        ref, ref_se = mean_and_se(part["scikit_learn"])
+        print(f"    {report_by} = {value}: {sum(part['fold_sizes'])} runs ({counts}) | "
+              f"forest {own:.3f} (se {own_se:.3f}), scikit-learn {ref:.3f} (se {ref_se:.3f})")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -114,17 +169,20 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     config = read_config(args.config)
+    split_by = split_column(config)
+    report_by = config.get("report_by")
     results = []
-    for value, rows, labels, groups in load_groups(config):
-        result = evaluate(rows, labels, groups, config)
+    for value, rows, labels, groups, reports in load_groups(config):
+        result = evaluate(rows, labels, groups, config, reports)
         results.append((value, result))
         counts = ", ".join(f"{label} {n}" for label, n in sorted(Counter(labels).items()))
         own, own_se = mean_and_se(result["forest"])
         ref, ref_se = mean_and_se(result["scikit_learn"])
-        print(f"{config['split_by']} = {value}: {len(rows)} runs ({counts}) | balanced accuracy: "
+        print(f"{split_by} = {value}: {len(rows)} runs ({counts}) | balanced accuracy: "
               f"forest {own:.3f} (se {own_se:.3f}), scikit-learn {ref:.3f} (se {ref_se:.3f})")
+        print_breakdown(report_by, result)
 
-    out = write_results(args.config.stem, config["split_by"], results, RESULTS)
+    out = write_results(args.config.stem, split_by, results, RESULTS, report_by)
     print(f"results written to {out}")
     return 0
 
