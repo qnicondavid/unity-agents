@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-import forest
+import cv
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RESULTS = REPO_ROOT / "analysis" / "results"
@@ -55,17 +55,7 @@ def load_groups(config: dict) -> list[tuple]:
 def group_folds(groups: list, k: int, seed: int) -> list:
     if k > len(set(groups)):
         raise ValueError(f"{k} folds, but only {len(set(groups))} configurations")
-    return forest.make_group_folds(groups, k, seed)
-
-
-def out_of_fold(rows: list, targets: list, folds: list, train, predict) -> list:
-    predictions = [None] * len(rows)
-    for f in range(len(folds)):
-        training = [p for j in range(len(folds)) if j != f for p in folds[j]]
-        model = train([rows[p] for p in training], [targets[p] for p in training])
-        for p, predicted in zip(folds[f], predict(model, [rows[p] for p in folds[f]])):
-            predictions[p] = predicted
-    return predictions
+    return cv.make_group_folds(groups, k, seed)
 
 
 def fold_scores(targets: list, predictions: list, folds: list, score) -> list[float]:
@@ -82,10 +72,10 @@ def report_folds(folds: list, reports: list) -> dict:
     return ans
 
 
-def evaluate(rows: list, targets: list, groups: list, reports: list | None, cv: dict, models: dict,
-             summarize) -> dict:
-    folds = group_folds(groups, cv["folds"], cv["seed"])
-    predictions = {name: out_of_fold(rows, targets, folds, train, predict)
+def evaluate(rows: list, targets: list, groups: list, reports: list | None, cv_config: dict,
+             models: dict, summarize) -> dict:
+    folds = group_folds(groups, cv_config["folds"], cv_config["seed"])
+    predictions = {name: cv.cross_validation(rows, targets, folds, train, predict)
                    for name, (train, predict) in models.items()}
     result = {"fold_sizes": [len(fold) for fold in folds], **summarize(targets, predictions, folds)}
     if reports is not None:

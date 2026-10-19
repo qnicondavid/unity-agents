@@ -2,8 +2,8 @@ import argparse
 import os
 from pathlib import Path
 
+import cv
 import experiment
-import forest
 from run_forest import METRIC, RESULTS, evaluate, own_forest
 
 KEYS = ["trees", "attributes_per_tree", "max_depth"]
@@ -13,8 +13,8 @@ def score_candidate(rows: list, targets: list, folds: list, candidate: dict, con
     labels = [str(t) for t in targets]
     train, predict = own_forest(candidate["trees"], candidate["attributes_per_tree"],
                                 candidate["max_depth"], config["forest"]["seed"])
-    predictions = experiment.out_of_fold(rows, labels, folds, train, predict)
-    return experiment.fold_scores(labels, predictions, folds, forest.balanced_accuracy)
+    predictions = cv.cross_validation(rows, labels, folds, train, predict)
+    return experiment.fold_scores(labels, predictions, folds, cv.balanced_accuracy)
 
 
 def simplicity(candidate: dict) -> tuple:

@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
+import cv
 import experiment
 import forest
 
@@ -36,10 +37,10 @@ def scikit_learn_forest(trees: int, m: int, max_depth: int | None, seed: int) ->
 
 def summarize(labels: list, predictions: dict, folds: list) -> dict:
     tested = [p for fold in folds for p in fold]
-    scores = {name: experiment.fold_scores(labels, predicted, folds, forest.balanced_accuracy)
+    scores = {name: experiment.fold_scores(labels, predicted, folds, cv.balanced_accuracy)
               for name, predicted in predictions.items()}
-    confusion = forest.confusion_matrix([labels[p] for p in tested],
-                                        [predictions["forest"][p] for p in tested])
+    confusion = cv.confusion_matrix([labels[p] for p in tested],
+                                    [predictions["forest"][p] for p in tested])
     return {"scores": scores, "confusion": confusion}
 
 
@@ -51,8 +52,8 @@ def evaluate(rows: list, targets: list, groups: list, reports: list | None, conf
     parameters = (settings["trees"], m, settings.get("max_depth"), settings["seed"])
     models = {"forest": own_forest(*parameters), "scikit_learn": scikit_learn_forest(*parameters)}
     labels = [str(t) for t in targets]
-    cv = config["cross_validation"]
-    return experiment.evaluate(rows, labels, groups, reports, cv, models, summarize)
+    return experiment.evaluate(rows, labels, groups, reports, config["cross_validation"], models,
+                               summarize)
 
 
 def main(argv: list[str] | None = None) -> int:
