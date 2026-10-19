@@ -1,3 +1,5 @@
+import argparse
+import os
 import tomllib
 from concurrent.futures import ProcessPoolExecutor
 from itertools import product
@@ -133,6 +135,26 @@ def write_results(name: str, split_by: str, results: list, folder: Path, metric:
     return out
 
 
+def run(argv: list[str] | None, model: str, metric: str, evaluate_split) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=Path, required=True)
+    args = parser.parse_args(argv)
+
+    config = read_config(args.config)
+    split_by = split_column(config)
+    report_by = config.get("report_by")
+    results = []
+    for value, rows, targets, groups, reports in load_groups(config):
+        result = evaluate_split(rows, targets, groups, reports, config)
+        results.append((value, result))
+        print(f"{split_by} = {value}: {len(rows)} runs | {scores_line(result, metric)}")
+        print_breakdown(report_by, result, metric)
+
+    out = write_results(args.config.stem, split_by, results, RESULTS / model, metric, report_by)
+    print(f"results written to {out}")
+    return 0
+
+
 def grid(tuning: dict, keys: list[str]) -> list[dict]:
     ans = []
     for values in product(*(tuning[key] for key in keys)):
@@ -201,3 +223,32 @@ def write_tuning(split_by: str, outcomes: list, keys: list[str], metric: str, fo
         summary_rows.append(row)
     pd.DataFrame(candidate_rows).to_csv(folder / "candidates.csv", index=False, lineterminator="\n")
     pd.DataFrame(summary_rows).to_csv(folder / "summary.csv", index=False, lineterminator="\n")
+
+
+def run_tuning(argv: list[str] | None, model: str, metric: str, evaluate_split, keys: list[str],
+               score_candidate, simplicity, better=max, check=None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--workers", type=int, default=min(os.cpu_count() or 1, 61))
+    args = parser.parse_args(argv)
+
+    config = read_config(args.config)
+    if check is not None:
+        check(config)
+    split_by = split_column(config)
+    report_by = config.get("report_by")
+    outcomes = []
+    for value, rows, targets, groups, reports, scored in tune(config, args.workers, keys, score_candidate):
+        chosen = choose(scored, simplicity, better)
+        result = evaluate_split(rows, targets, groups, reports, with_settings(config, model, chosen, keys))
+        outcomes.append((value, scored, chosen, result))
+        settings = ", ".join(f"{key} {setting}" for key, setting in settings_row(chosen, keys).items())
+        print(f"{split_by} = {value}: chose {settings} (best of {len(scored)}) | "
+              f"tuning {chosen['mean']:.3f} (se {chosen['se']:.3f}) | report: {scores_line(result, metric)}")
+        print_breakdown(report_by, result, metric)
+
+    folder = write_results("tuned_best_mean", split_by, [(o[0], o[3]) for o in outcomes],
+                           RESULTS / model / args.config.stem, metric, report_by)
+    write_tuning(split_by, outcomes, keys, metric, folder, better)
+    print(f"results written to {folder}")
+    return 0

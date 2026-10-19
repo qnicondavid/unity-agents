@@ -1,14 +1,9 @@
-import argparse
-from collections import Counter
-from pathlib import Path
-
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
 from analysis.core import cv, experiment
 from analysis.forest import forest
 
-RESULTS = experiment.RESULTS / "forest"
 METRIC = "balanced_accuracy"
 
 
@@ -56,25 +51,7 @@ def evaluate(rows: list, targets: list, groups: list, reports: list | None, conf
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=Path, required=True)
-    args = parser.parse_args(argv)
-
-    config = experiment.read_config(args.config)
-    split_by = experiment.split_column(config)
-    report_by = config.get("report_by")
-    results = []
-    for value, rows, targets, groups, reports in experiment.load_groups(config):
-        result = evaluate(rows, targets, groups, reports, config)
-        results.append((value, result))
-        counts = ", ".join(f"{label} {n}" for label, n in sorted(Counter(map(str, targets)).items()))
-        scores = experiment.scores_line(result, METRIC)
-        print(f"{split_by} = {value}: {len(rows)} runs ({counts}) | {scores}")
-        experiment.print_breakdown(report_by, result, METRIC)
-
-    out = experiment.write_results(args.config.stem, split_by, results, RESULTS, METRIC, report_by)
-    print(f"results written to {out}")
-    return 0
+    return experiment.run(argv, "forest", METRIC, evaluate)
 
 
 if __name__ == "__main__":
