@@ -1,2 +1,0 @@
-run_id,environment_name,algorithm,cpu_model,cpu_cores,ram_gb_total,gpu_model,batch_size,buffer_size,learning_rate,hidden_units,num_layers,max_steps,wall_clock_time_sec,peak_ram_mb,final_mean_reward
-3DBall_ppo_01,3DBall,PPO,arm,8,8.0,N/A,64,12000,0.0003,128,2,500000,159.5,351.78,100.0

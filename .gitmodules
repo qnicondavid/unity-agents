@@ -1,7 +1,7 @@
 [submodule "external/ml-agents"]
 	path = external/ml-agents
 	url = https://github.com/qnicondavid/ml-agents.git
-	ignore = untracked
+	ignore = all
 [submodule "external/BCS2720-project-data-collection"]
 	path = external/BCS2720-project-data-collection
 	url = https://github.com/DennisSoemers/BCS2720-project-data-collection.git

@@ -1,0 +1,5 @@
+run_id,environment_name,seed,batch_size,buffer_size,learning_rate,hidden_units,num_layers,epsilon,beta,num_epoch,max_steps,summary_freq,reward_threshold,steps_to_threshold,reached_threshold,final_mean_reward,cpu_model,cpu_cores,ram_gb_total,gpu_model
+3DBall_c00_s0,3DBall,0,32,2048,0.001,64,1,0.1,0.01,3,100000,12000,80.0,84000,True,100.0,arm,8,8.0,N/A
+3DBall_c00_s1,3DBall,1,32,2048,0.001,64,1,0.1,0.01,3,100000,12000,80.0,84000,True,100.0,arm,8,8.0,N/A
+3DBall_c01_s0,3DBall,0,32,16384,0.0001,64,1,0.1,0.001,8,100000,12000,80.0,,False,1.9943,arm,8,8.0,N/A
+3DBall_c01_s1,3DBall,1,32,16384,0.0001,64,1,0.1,0.001,8,100000,12000,80.0,,False,2.1389,arm,8,8.0,N/A

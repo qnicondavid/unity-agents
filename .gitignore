@@ -1,6 +1,8 @@
 # Survey output - regenerate with tools/survey_shared_data.py
 tools/out/
 survey_out/
+builds/
+results/
 
 # Python
 __pycache__/
