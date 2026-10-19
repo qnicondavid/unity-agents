@@ -1,0 +1,42 @@
+data = "data/group15.csv"
+target = "steps_to_95"
+log_target = true
+split_by = "max_steps"
+features = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+]
+log_features = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+]
+group_by = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+    "beta",
+    "epsilon",
+    "lambd",
+    "num_epoch",
+    "time_horizon",
+    "learning_rate_schedule",
+    "normalize",
+]
+
+[mlp]
+hidden_sizes = [128]
+learning_rate = 0.1
+batch_size = 128
+epochs = 60
+seeds = [1, 2, 3]
+
+[cross_validation]
+folds = 10
+seed = 7
