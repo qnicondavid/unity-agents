@@ -1,0 +1,4 @@
+max_steps,hidden_sizes,learning_rate,batch_size,epochs,tuning_mean_absolute_error,tuning_se,mlp_mean_absolute_error,mlp_se,scikit_learn_mean_absolute_error,scikit_learn_se,ridge_mean_absolute_error,ridge_se,median_mean_absolute_error,median_se
+500000,[128],0.001,32,120,0.239838,0.010418,0.241847,0.010808,0.277067,0.01472,0.246443,0.008353,0.339351,0.0298
+1000000,[64],0.003,64,240,0.256975,0.009859,0.260315,0.013295,0.261537,0.013424,0.26546,0.013937,0.506491,0.034757
+2000000,[64],0.01,128,120,0.309906,0.014971,0.313274,0.011926,0.322709,0.014299,0.326812,0.013015,0.609244,0.019828
