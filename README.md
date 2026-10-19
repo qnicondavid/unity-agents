@@ -16,6 +16,7 @@ Can PPO hyperparameters predict how many training steps a Unity ML-Agents run ne
   - [Building the Group 15 dataset](#building-the-group-15-dataset)
   - [Running the forest](#running-the-forest)
   - [Tuning the forest](#tuning-the-forest)
+- [License](#license)
 
 ## Layout
 
@@ -158,18 +159,21 @@ A config sets:
 - `data`: the CSV, relative to the repository root
 - `class_attribute`: the column to predict
 - `features`: the columns the forest learns from
-- `split_by`: the column whose values each get their own cross-validation (`max_steps` in our configs, so one per budget)
+- `split_by` (optional): the column whose values each get their own cross-validation (`max_steps` in our split configs, so one per budget); without it, one cross-validation covers all runs
+- `report_by` (optional): a column to break the results down by (`max_steps` in our pooled configs); the cross-validation stays the same
 - `group_by`: the columns that make up a configuration; runs with the same values always share a fold
 - `[forest]`: `trees`, `attributes_per_tree` (at most the number of features), `seed`, and optionally `max_depth` (no limit if it is left out)
 - `[cross_validation]`: `folds` (at most the number of configurations) and `seed`
 
-To run a new experiment, add a config file. The two in `analysis/configs/forest/` predict `reached_95` from the plan's 5 settings and from all 12.
+To run a new experiment, add a config file. The four in `analysis/configs/forest/` predict `reached_95` from the plan's 5 settings and from all 12. The split configs give each budget its own cross-validation. The pooled ones, ending in `_pooled`, use one cross-validation over all budgets, with `max_steps` as one more feature.
 
-The results go to `analysis/results/forest/<config name>/`: `folds.csv` has both forests' balanced accuracy on each fold, and `confusion.csv` has our forest's confusion matrix for each value of `split_by`. Always predicting the more common class gives a balanced accuracy of 0.5.
+The results go to `analysis/results/forest/<config name>/`: `folds.csv` has both forests' balanced accuracy on each fold, and `confusion.csv` has our forest's confusion matrix for each value of `split_by`. Without `split_by`, the first column is `split`, with the value `all`. Always predicting the more common class gives a balanced accuracy of 0.5.
+
+With `report_by`, two more files break the results down by that column's values. For the pooled configs, `folds_by_max_steps.csv` has both forests' balanced accuracy on each budget's runs in each fold, and `confusion_by_max_steps.csv` has our forest's confusion matrix for each budget. These compare directly with the split configs' results.
 
 ### Tuning the forest
 
-`analysis/tune_forest.py` tries every combination of the settings listed in a config's `[tuning]` table, separately for each value of `split_by`. It picks the combination with the best mean balanced accuracy on a grouped cross-validation, then reports that choice on fresh folds that were not used for choosing.
+`analysis/tune_forest.py` tries every combination of the settings listed in a config's `[tuning]` table, separately for each value of `split_by` if the config has one. It picks the combination with the best mean balanced accuracy on a grouped cross-validation, then reports that choice on fresh folds that were not used for choosing.
 
 From the repository root, with `.venv` active:
 
@@ -185,4 +189,8 @@ The `[tuning]` table sets:
 - `report_folds` and `report_seed`: the fresh cross-validation used for reporting
 - `trees`, `attributes_per_tree` and `max_depth`: the values to try, with `"none"` for no depth limit
 
-The results go to `analysis/results/forest/<config name>/tuned_best_mean/`: `candidates.csv` has every combination's tuning score and rank, `summary.csv` the chosen setting with its tuning and report scores, and `folds.csv` and `confusion.csv` the report run. `tuned_two_se/` holds the first tuning run, which used the practical's tie rule (within two standard errors of the best, the simplest wins) on a 5-fold cross-validation; on our data that rule chose forests that were too shallow.
+The results go to `analysis/results/forest/<config name>/tuned_best_mean/`: `candidates.csv` has every combination's tuning score and rank, `summary.csv` the chosen setting with its tuning and report scores, and `folds.csv` and `confusion.csv` the report run, plus the two breakdown files when `report_by` is set. For the split configs, `tuned_two_se/` holds the first tuning run, which used the practical's tie rule (within two standard errors of the best, the simplest wins) on a 5-fold cross-validation; on our data that rule chose forests that were too shallow.
+
+## License
+
+Our code and docs are under the MIT License (`LICENSE`). The two submodules, `external/ml-agents` (Unity Technologies) and `external/BCS2720-project-data-collection` (the course's shared data), keep their own Apache License 2.0. `data/group15.csv` is built from Group 15's data, so it stays under the Apache License 2.0 too.
