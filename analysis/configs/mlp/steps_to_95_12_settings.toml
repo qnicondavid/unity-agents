@@ -49,3 +49,13 @@ seeds = [1, 2, 3]
 [cross_validation]
 folds = 10
 seed = 7
+
+[tuning]
+folds = 10
+seed = 1
+report_folds = 10
+report_seed = 11
+hidden_sizes = [[32], [64], [128], [64, 64]]
+learning_rate = [0.001, 0.003, 0.01, 0.03, 0.1]
+batch_size = [32, 64, 128]
+epochs = [60, 120, 240]
