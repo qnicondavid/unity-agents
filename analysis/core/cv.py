@@ -95,6 +95,13 @@ def confusion_matrix(true_labels, predicted_labels):
     return matrix
 
 
+def mean_absolute_error(true_values, predicted_values):
+    total = 0
+    for i in range(len(true_values)):
+        total += abs(true_values[i] - predicted_values[i])
+    return total / len(true_values)
+
+
 # Why not measure on the training set?  [Lecture 04, slide 34]
 # - performance on the training set only shows what the algorithm remembers
 # - the best estimate of future performance comes from an independent test set
