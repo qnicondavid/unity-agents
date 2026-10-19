@@ -33,7 +33,7 @@ def encode(column: pd.Series) -> pd.Series:
 
 def load_groups(config: dict) -> list[tuple]:
     data = pd.read_csv(config["data"])
-    data = data[data[config["class_attribute"]].notna()].reset_index(drop=True)
+    data = data[data[config["target"]].notna()].reset_index(drop=True)
     if data[config["features"]].isna().any().any():
         raise ValueError("some features have missing values")
 
@@ -45,7 +45,7 @@ def load_groups(config: dict) -> list[tuple]:
     for value in values:
         part = data[split_by] == value if split_by else pd.Series(True, index=data.index)
         rows = features[part].values.tolist()
-        targets = data.loc[part, config["class_attribute"]].tolist()
+        targets = data.loc[part, config["target"]].tolist()
         groups = [tuple(g) for g in data.loc[part, config["group_by"]].astype(str).values.tolist()]
         reports = data.loc[part, report_by].tolist() if report_by else None
         ans.append((value, rows, targets, groups, reports))

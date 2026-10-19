@@ -157,7 +157,7 @@ python analysis\run_forest.py --config analysis\configs\forest\reached_95_12_set
 A config sets:
 
 - `data`: the CSV, relative to the repository root
-- `class_attribute`: the column to predict
+- `target`: the column to predict
 - `features`: the columns the forest learns from
 - `split_by` (optional): the column whose values each get their own cross-validation (`max_steps` in our split configs, so one per budget); without it, one cross-validation covers all runs
 - `report_by` (optional): a column to break the results down by (`max_steps` in our pooled configs); the cross-validation stays the same

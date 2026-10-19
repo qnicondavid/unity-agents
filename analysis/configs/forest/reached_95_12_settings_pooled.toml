@@ -1,5 +1,5 @@
 data = "data/group15.csv"
-class_attribute = "reached_95"
+target = "reached_95"
 report_by = "max_steps"
 features = [
     "batch_size",
