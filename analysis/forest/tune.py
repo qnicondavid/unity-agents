@@ -2,9 +2,8 @@ import argparse
 import os
 from pathlib import Path
 
-import cv
-import experiment
-from run_forest import METRIC, RESULTS, evaluate, own_forest
+from analysis.core import cv, experiment
+from analysis.forest.run import METRIC, RESULTS, evaluate, own_forest
 
 KEYS = ["trees", "attributes_per_tree", "max_depth"]
 

@@ -5,9 +5,8 @@ from pathlib import Path
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
-import cv
-import experiment
-import forest
+from analysis.core import cv, experiment
+from analysis.forest import forest
 
 RESULTS = experiment.RESULTS / "forest"
 METRIC = "balanced_accuracy"

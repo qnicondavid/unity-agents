@@ -29,6 +29,9 @@ docs/
   resources/     official materials
 tools/           scripts
 analysis/        ML code and its pinned requirements
+  core/          code shared by the experiments
+  datasets/      scripts that build data/
+  forest/        our ID3 forest, its runner and its tuner
   configs/       experiment settings, one TOML file per experiment
   results/       what each experiment wrote
 data/            datasets built by the analysis scripts
@@ -126,12 +129,12 @@ tensorboard --logdir results
 
 ### Building the Group 15 dataset
 
-`analysis/group15.py` reads `Group15_data.7z` from the data submodule and writes `data/group15.csv`: one row per PPO run on 3DBall with a budget of 500k, 1M or 2M steps (1,555 runs).
+`analysis/datasets/group15.py` reads `Group15_data.7z` from the data submodule and writes `data/group15.csv`: one row per PPO run on 3DBall with a budget of 500k, 1M or 2M steps (1,555 runs).
 
 From the repository root, with `.venv` active:
 
 ```powershell
-python analysis\group15.py
+python -m analysis.datasets.group15
 ```
 
 Each row has the run's 12 PPO settings, its budget (`max_steps`), the machine it ran on and three outcome columns:
@@ -146,12 +149,12 @@ Data: Group 15 (AY 2025-2026), from the course's shared data repository (Apache 
 
 ### Running the forest
 
-`analysis/run_forest.py` cross-validates our ID3 forest (`analysis/forest.py`) on the dataset a config file names. It also runs scikit-learn's forest on the same folds, as a check.
+`analysis/forest/run.py` cross-validates our ID3 forest (`analysis/forest/forest.py`) on the dataset a config file names. It also runs scikit-learn's forest on the same folds, as a check.
 
 From the repository root, with `.venv` active:
 
 ```powershell
-python analysis\run_forest.py --config analysis\configs\forest\reached_95_12_settings.toml
+python -m analysis.forest.run --config analysis\configs\forest\reached_95_12_settings.toml
 ```
 
 A config sets:
@@ -173,12 +176,12 @@ With `report_by`, two more files break the results down by that column's values.
 
 ### Tuning the forest
 
-`analysis/tune_forest.py` tries every combination of the settings listed in a config's `[tuning]` table, separately for each value of `split_by` if the config has one. It picks the combination with the best mean balanced accuracy on a grouped cross-validation, then reports that choice on fresh folds that were not used for choosing.
+`analysis/forest/tune.py` tries every combination of the settings listed in a config's `[tuning]` table, separately for each value of `split_by` if the config has one. It picks the combination with the best mean balanced accuracy on a grouped cross-validation, then reports that choice on fresh folds that were not used for choosing.
 
 From the repository root, with `.venv` active:
 
 ```powershell
-python analysis\tune_forest.py --config analysis\configs\forest\reached_95_12_settings.toml
+python -m analysis.forest.tune --config analysis\configs\forest\reached_95_12_settings.toml
 ```
 
 It uses every CPU core; `--workers` sets a lower number.

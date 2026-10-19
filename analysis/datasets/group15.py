@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import py7zr
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 ARCHIVE = (REPO_ROOT / "external" / "BCS2720-project-data-collection" / "AY 2025-2026"
            / "Group 15" / "Group15_data.7z")
 OUTPUT = REPO_ROOT / "data" / "group15.csv"
