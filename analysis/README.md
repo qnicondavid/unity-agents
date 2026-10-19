@@ -1,0 +1,118 @@
+# Analysis
+
+This folder has the code that builds our datasets and runs the experiments on them, plus their configs and results. For the project and the training runs, see the [main README](../README.md).
+
+## Contents
+
+- [Layout](#layout)
+- [Environment](#environment)
+- [Building the Group 15 dataset](#building-the-group-15-dataset)
+- [Running the forest](#running-the-forest)
+- [Tuning the forest](#tuning-the-forest)
+
+## Layout
+
+```
+core/
+  cv.py          folds, cross-validation and metrics
+  experiment.py  configs, data loading, evaluation, results and tuning
+datasets/
+  group15.py     builds data/group15.csv
+forest/
+  forest.py      our ID3 forest
+  run.py         cross-validates the forest
+  tune.py        tunes the forest
+configs/         experiment settings, one TOML file per experiment
+results/         what each experiment wrote
+requirements.txt the pinned packages
+```
+
+Each model has its own folder with the model and two scripts, `run.py` and `tune.py`. The code they share is in `core/`. The scripts run as modules from the repository root, for example `python -m analysis.forest.run`.
+
+## Environment
+
+1) Create the environment in the repository root:
+
+   ```powershell
+   C:\path\to\python314\python.exe -m venv .venv
+   ```
+
+2) Activate it (needed in every new terminal):
+
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+3) Install the pinned packages:
+
+   ```powershell
+   python -m pip install -r analysis\requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+   ```
+
+## Building the Group 15 dataset
+
+`analysis/datasets/group15.py` reads `Group15_data.7z` from the data submodule and writes `data/group15.csv`: one row per PPO run on 3DBall with a budget of 500k, 1M or 2M steps (1,555 runs).
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.datasets.group15
+```
+
+Each row has the run's 12 PPO settings, its budget (`max_steps`), the machine it ran on and three outcome columns:
+
+- `last_logged_step`: the last step the run logged
+- `reached_95`: whether the mean reward reached 95 within the budget; empty if the run stopped early without reaching it
+- `steps_to_95`: the first logged step with a mean reward of 95 or more; empty otherwise
+
+The CSV is committed. Rerunning the script should leave `git diff` empty.
+
+Data: Group 15 (AY 2025-2026), from the course's shared data repository (Apache License 2.0).
+
+## Running the forest
+
+`analysis/forest/run.py` cross-validates our ID3 forest (`analysis/forest/forest.py`) on the dataset a config file names. It also runs scikit-learn's forest on the same folds, as a check.
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.forest.run --config analysis\configs\forest\reached_95_12_settings.toml
+```
+
+A config sets:
+
+- `data`: the CSV, relative to the repository root
+- `target`: the column to predict
+- `features`: the columns the forest learns from
+- `split_by` (optional): the column whose values each get their own cross-validation (`max_steps` in our split configs, so one per budget); without it, one cross-validation covers all runs
+- `report_by` (optional): a column to break the results down by (`max_steps` in our pooled configs); the cross-validation stays the same
+- `group_by`: the columns that make up a configuration; runs with the same values always share a fold
+- `[forest]`: `trees`, `attributes_per_tree` (at most the number of features), `seed`, and optionally `max_depth` (no limit if it is left out)
+- `[cross_validation]`: `folds` (at most the number of configurations) and `seed`
+
+To run a new experiment, add a config file. The four in `analysis/configs/forest/` predict `reached_95` from the plan's 5 settings and from all 12. The split configs give each budget its own cross-validation. The pooled ones, ending in `_pooled`, use one cross-validation over all budgets, with `max_steps` as one more feature.
+
+The results go to `analysis/results/forest/<config name>/`: `folds.csv` has both forests' balanced accuracy on each fold, and `confusion.csv` has our forest's confusion matrix for each value of `split_by`. Without `split_by`, the first column is `split`, with the value `all`. Always predicting the more common class gives a balanced accuracy of 0.5.
+
+With `report_by`, two more files break the results down by that column's values. For the pooled configs, `folds_by_max_steps.csv` has both forests' balanced accuracy on each budget's runs in each fold, and `confusion_by_max_steps.csv` has our forest's confusion matrix for each budget. These compare directly with the split configs' results.
+
+## Tuning the forest
+
+`analysis/forest/tune.py` tries every combination of the settings listed in a config's `[tuning]` table, separately for each value of `split_by` if the config has one. It picks the combination with the best mean balanced accuracy on a grouped cross-validation, then reports that choice on fresh folds that were not used for choosing.
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.forest.tune --config analysis\configs\forest\reached_95_12_settings.toml
+```
+
+It uses every CPU core; `--workers` sets a lower number.
+
+The `[tuning]` table sets:
+
+- `folds` and `seed`: the cross-validation used for choosing
+- `report_folds` and `report_seed`: the fresh cross-validation used for reporting
+- `trees`, `attributes_per_tree` and `max_depth`: the values to try, with `"none"` for no depth limit
+
+The results go to `analysis/results/forest/<config name>/tuned_best_mean/`: `candidates.csv` has every combination's tuning score and rank, `summary.csv` the chosen setting with its tuning and report scores, and `folds.csv` and `confusion.csv` the report run, plus the two breakdown files when `report_by` is set. For the split configs, `tuned_two_se/` holds the first tuning run, which used the practical's tie rule (within two standard errors of the best, the simplest wins) on a 5-fold cross-validation; on our data that rule chose forests that were too shallow.
