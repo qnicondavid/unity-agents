@@ -1,0 +1,13 @@
+split,max_steps,true,predicted,count
+all,500000,False,False,334
+all,500000,False,True,40
+all,500000,True,False,12
+all,500000,True,True,137
+all,1000000,False,False,216
+all,1000000,False,True,30
+all,1000000,True,False,27
+all,1000000,True,True,261
+all,2000000,False,False,106
+all,2000000,False,True,23
+all,2000000,True,False,35
+all,2000000,True,True,333

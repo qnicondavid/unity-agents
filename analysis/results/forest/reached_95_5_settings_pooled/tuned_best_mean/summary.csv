@@ -1,0 +1,2 @@
+split,trees,attributes_per_tree,max_depth,tuning_balanced_accuracy,tuning_se,forest_balanced_accuracy,forest_se,scikit_learn_balanced_accuracy,scikit_learn_se
+all,100,4,8,0.858256,0.008882,0.857931,0.006311,0.850941,0.005035
