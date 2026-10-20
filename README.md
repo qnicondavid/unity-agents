@@ -32,6 +32,7 @@ analysis/        ML code and its pinned requirements
   configs/       experiment settings, one TOML file per experiment
   results/       what each experiment wrote
 data/            datasets built by the analysis scripts
+builds/          Unity environments for automated runs
 external/
   ml-agents/     our ML-Agents fork
   BCS2720-project-data-collection/   the course's shared group data
@@ -93,13 +94,69 @@ tensorboard --logdir results
    python -m pip install psutil PyYAML
    ```
 
-2. From the `unity-agents` repository, run:
+## Automated Training & Data Collection
 
-   ```powershell
-   python tools/run_logger.py --config <path-to-config.yaml> --run-id <unique-run-id>
+We automate our logging to generate run specifc config files, execute PPO training using compiled Unity environment builds, read TensorBoard reward curves, and log the results to our dataset (data/group10_2026.csv).
+
+### Building and Specifying a Unity Environment
+
+To run training automatically without manually pressing Play in the Unity Editor, first build the Unity environment:
+1. In the Unity Editor, open File > Build Settings.
+2. Select the appropriate platform for your operating system.
+3. Set the target path to root `builds/` directory (e.g., `builds/3DBall.app` on macOS or `builds/3DBall.exe` on Windows).
+4. Click Build/Build and Run.
+
+### Running a Single Automated Training Run
+
+From the `unity-agents` repository root, use `collect_run.py` pointing to your built environment:
+
+```powershell
+python tools/collect_run.py --config <path-to-config.yaml> --run-id <unique-run-id> --env-path <path-to-built-environment> 
    ```
+Replace <path-to-config.yaml> with the path to your PPO configuration, <unique-run-id> with a unique identifier for the experiment, and <path-to-built-environment> with the path to your built Unity environment.
 
-   Replace `<path-to-config.yaml>` with the path to the configuration file and `<unique-run-id>` with a unique identifier for the experiment run you want to log.
+### Running a hyperparameter batch
+
+The batch script automates multiple PPO experiments by randomly sampling hyperparameter configurations and running each configuration with the specified random seeds.
+
+The default search space includes:
+
+| Hyperparameter | Potential values |
+|
+| `batch_size` | 32, 64, 128, 256 |
+| `buffer_size` | 2048, 4096, 8192, 16384 |
+| `learning_rate` | 0.0001, 0.0003, 0.001, 0.003 |
+| `hidden_units` | 64, 128, 256 |
+| `num_layers` | 1, 2, 3 |
+| `epsilon` | 0.1, 0.2, 0.3 |
+| `beta` | 0.001, 0.005, 0.01 |
+| `num_epoch` | 3, 5, 8 |
+
+#### Running the batch
+
+From the repository root, run the following command to use the default settings:
+
+```powershell
+python tools/batch_run.py
+```
+
+Allowable arguments to customize automated runs: 
+
+*  --n-configs: Number of distinct random hyperparameter configurations to sample (default: 8).
+*  --seeds: One or more random seeds to run for each configuration (default: 0 1).
+*  --batch-seed: Seed used to sample the hyperparameter combinations (default: 23453).
+*  --config: Path to the base PPO configuration YAML file (default: config/ppo/3DBall.yaml).
+*  --max-steps: Maximum training steps per run (default: 500000).
+*  --threshold: Mean reward threshold used to calculate steps to threshold (default: 80.0).
+*  --env-path: Optional path to the compiled Unity environment build. (e.g., `builds/3DBall.app` or `builds/3DBall.exe`).
+
+For example, to run two configurations with seeds 0 and 1, a maximum of 100,000 training steps, and a built Unity environment:
+
+```
+python tools/batch_run.py --n-configs 2 --seeds 0 1 --max-steps 100000 --env-path builds/3DBall.app
+```
+
+
 
 ## Analysis
 
