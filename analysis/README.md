@@ -7,6 +7,7 @@ This folder has the code that builds our datasets and runs the experiments on th
 - [Layout](#layout)
 - [Environment](#environment)
 - [Data](#data)
+  - [Group 10](#group-10)
   - [Group 15](#group-15)
 - [Experiments](#experiments)
 - [Forest](#forest)
@@ -24,7 +25,9 @@ core/
   cv.py          folds, cross-validation and metrics
   experiment.py  configs, data loading, evaluation, results and tuning
 datasets/
+  group10.py     builds data/group10.csv
   group15.py     builds data/group15.csv
+  outcomes.py    reached_95 and steps_to_95 from the reward curves
 forest/
   forest.py      our ID3 forest
   run.py         cross-validates the forest
@@ -64,6 +67,26 @@ Each model has its own folder with the model and two scripts, `run.py` and `tune
 ## Data
 
 Each dataset has a script in `datasets/` that writes a CSV to `data/`. A config names the CSV it uses.
+
+### Group 10
+
+`analysis/datasets/group10.py` reads our run log (`data/group10_2026.csv`), the ML-Agents config of each logged run (`data/configs/`) and its training curve (`data/curves/`), and writes `data/group10.csv`: one row per PPO run on 3DBall with a budget of 500k steps (100 runs). The four 100k test runs in the log are left out.
+
+The curves come from the TensorBoard files in `results/`, which exist only on the machine that ran the batch. After a new batch, export the new curves from the repository root, with the ML-Agents virtual environment (`external\ml-agents\venv`) active:
+
+```powershell
+python tools\export_curves.py
+```
+
+Then build the dataset, with `.venv` active:
+
+```powershell
+python -m analysis.datasets.group10
+```
+
+Each row has the run's 12 PPO settings (our batch varies 8 of them), its budget, its seed, the machine it ran on and the same three outcome columns as Group 15, computed the same way (`datasets/outcomes.py`).
+
+The CSV is committed. Rerunning the script should leave `git diff` empty.
 
 ### Group 15
 
@@ -150,7 +173,7 @@ The `[tuning]` table lists the values to try for `trees`, `attributes_per_tree` 
 
 The score is the mean absolute error, averaged over the seeds for the two networks.
 
-The four configs in `analysis/configs/mlp/` predict `steps_to_95` from the plan's 5 settings and from all 12, split and pooled like the forest's. Only runs that reached 95 have a `steps_to_95`, so only they are used: 805 of the 1,555. The configs take the natural log of the target and of the settings that span a factor of 8 or more (and of `max_steps` in the pooled configs), so an error of 0.1 means a typical prediction is about 10% off.
+The configs in `analysis/configs/mlp/` predict `steps_to_95`. Four use Group 15's data, with the plan's 5 settings or all 12, split and pooled like the forest's. `group10_steps_to_95.toml` uses our runs, with the 8 settings our batch varies and no split, since all our runs have the same budget. Only runs that reached 95 have a `steps_to_95`, so only they are used: 805 of Group 15's 1,555 runs and 98 of our 100. The configs take the natural log of the target and of the settings that span a factor of 8 or more (and of `max_steps` in the pooled configs), so an error of 0.1 means a typical prediction is about 10% off.
 
 ### Running the MLP
 

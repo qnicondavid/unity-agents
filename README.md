@@ -11,6 +11,10 @@ Can PPO hyperparameters predict how many training steps a Unity ML-Agents run ne
   - [Running a training run](#running-a-training-run)
   - [Viewing results in TensorBoard](#viewing-results-in-tensorboard)
   - [Logging a training run](#logging-a-training-run)
+- [Automated Training & Data Collection](#automated-training--data-collection)
+  - [Building and Specifying a Unity Environment](#building-and-specifying-a-unity-environment)
+  - [Running a Single Automated Training Run](#running-a-single-automated-training-run)
+  - [Running a hyperparameter batch](#running-a-hyperparameter-batch)
 - [Analysis](#analysis)
 - [License](#license)
 
@@ -31,7 +35,9 @@ analysis/        ML code and its pinned requirements
   mlp/           our MLP, its runner and its tuner
   configs/       experiment settings, one TOML file per experiment
   results/       what each experiment wrote
-data/            datasets built by the analysis scripts
+data/            our run log and the datasets built by analysis/datasets/
+  configs/       ML-Agents config of each logged run
+  curves/        training curve of each logged run
 builds/          Unity environments for automated runs
 external/
   ml-agents/     our ML-Agents fork
@@ -63,9 +69,13 @@ git submodule update --init
    C:\path\to\python310\python.exe -m venv venv
    .\venv\Scripts\Activate.ps1
    pip install setuptools==81.0.0
+   pip install torch==2.8.0
    pip install -e .\ml-agents-envs
    pip install -e .\ml-agents
+   pip install psutil==7.2.2
    ```
+
+   The scripts in `tools/` also run in this environment. Keep torch at 2.8.0. From 2.9 on, torch exports models to ONNX in a way ML-Agents 1.0.0 does not support: every run ends with an error, and `tools/collect_run.py` does not log it.
 
 2) Unity: open `external\ml-agents\Project` with editor **2022.3.4f1**.
 
@@ -122,7 +132,7 @@ The batch script automates multiple PPO experiments by randomly sampling hyperpa
 The default search space includes:
 
 | Hyperparameter | Potential values |
-|
+|---|---|
 | `batch_size` | 32, 64, 128, 256 |
 | `buffer_size` | 2048, 4096, 8192, 16384 |
 | `learning_rate` | 0.0001, 0.0003, 0.001, 0.003 |
