@@ -4,6 +4,7 @@ Can PPO hyperparameters predict how many training steps a Unity ML-Agents run ne
 
 ## Contents
 
+- [Research questions](#research-questions)
 - [Layout](#layout)
 - [Getting the code](#getting-the-code)
 - [Training runs](#training-runs)
@@ -17,6 +18,20 @@ Can PPO hyperparameters predict how many training steps a Unity ML-Agents run ne
   - [Running a hyperparameter batch](#running-a-hyperparameter-batch)
 - [Analysis](#analysis)
 - [License](#license)
+
+## Research questions
+
+Main question:
+
+> To what extent can hyperparameter configurations predict the number of training steps required to meet a particular mean reward threshold in Proximal Policy Optimization (PPO) training runs?
+
+Sub-questions:
+
+1. Which PPO hyperparameters have the greatest influence on the predicted number of training steps required to reach the selected reward threshold?
+2. How accurately can different machine learning approaches, particularly MLP regression and random forest regression, predict the number of training steps required to reach the selected reward threshold?
+3. To what extent can we reliably evaluate these predictions while accounting for variation between training runs and potential confounding factors?
+
+For now, our forest predicts whether a run reaches the threshold within its budget (`reached_95`). The random forest regression comes later.
 
 ## Layout
 
