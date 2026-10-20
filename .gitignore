@@ -2,7 +2,7 @@
 tools/out/
 survey_out/
 builds/
-results/
+/results/
 
 # Python
 __pycache__/
