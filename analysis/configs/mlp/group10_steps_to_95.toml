@@ -1,0 +1,51 @@
+data = "data/group10.csv"
+target = "steps_to_95"
+log_target = true
+features = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+    "beta",
+    "epsilon",
+    "num_epoch",
+]
+log_features = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "beta",
+]
+group_by = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+    "beta",
+    "epsilon",
+    "num_epoch",
+]
+
+[mlp]
+hidden_sizes = [128]
+learning_rate = 0.1
+batch_size = 128
+epochs = 60
+seeds = [1, 2, 3]
+
+[cross_validation]
+folds = 10
+seed = 7
+
+[tuning]
+folds = 10
+seed = 1
+report_folds = 10
+report_seed = 11
+hidden_sizes = [[32], [64], [128], [64, 64]]
+learning_rate = [0.001, 0.003, 0.01, 0.03, 0.1]
+batch_size = [32, 64, 128]
+epochs = [60, 120, 240]
