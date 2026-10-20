@@ -1,2 +1,2 @@
 split,hidden_sizes,learning_rate,batch_size,epochs,tuning_mean_absolute_error,tuning_se,mlp_mean_absolute_error,mlp_se,scikit_learn_mean_absolute_error,scikit_learn_se,ridge_mean_absolute_error,ridge_se,median_mean_absolute_error,median_se
-all,[128],0.01,32,60,0.235129,0.022932,0.241029,0.019108,0.282518,0.030506,0.289595,0.029524,0.395404,0.031818
+all,[128],0.01,32,60,0.234867,0.023534,0.238091,0.0202,0.283229,0.03111,0.287718,0.029891,0.395404,0.031818

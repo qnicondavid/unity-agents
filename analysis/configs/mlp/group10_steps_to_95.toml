@@ -15,7 +15,6 @@ log_features = [
     "batch_size",
     "buffer_size",
     "learning_rate",
-    "hidden_units",
     "beta",
 ]
 group_by = [
