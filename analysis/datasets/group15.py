@@ -5,14 +5,14 @@ from pathlib import Path
 import pandas as pd
 import py7zr
 
+from analysis.datasets.outcomes import compute_outcomes
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARCHIVE = (REPO_ROOT / "external" / "BCS2720-project-data-collection" / "AY 2025-2026"
            / "Group 15" / "Group15_data.7z")
 OUTPUT = REPO_ROOT / "data" / "group15.csv"
 
-THRESHOLD = 95
 BUDGETS = (500_000, 1_000_000, 2_000_000)
-SUMMARY_FREQ = 12_000
 
 SETTINGS = [
     "batch_size", "buffer_size", "learning_rate", "hidden_units", "num_layers",
@@ -37,36 +37,6 @@ def select_runs(static: pd.DataFrame) -> pd.DataFrame:
     is_3dball = static["game_name"] == "3DBall"
     in_budget = static["max_steps"].isin(BUDGETS)
     return static[is_ppo & is_3dball & in_budget]
-
-
-def first_step_at(training: pd.DataFrame, threshold: float) -> pd.Series:
-    above = training[training["cumulative_reward"] >= threshold]
-    return above.groupby("RunID")["Step"].min()
-
-
-def last_logged_step(training: pd.DataFrame) -> pd.Series:
-    return training.groupby("RunID")["Step"].max()
-
-
-def expected_last_step(max_steps: int) -> int:
-    return (max_steps // SUMMARY_FREQ) * SUMMARY_FREQ
-
-
-def compute_outcomes(runs: pd.DataFrame, training: pd.DataFrame) -> pd.DataFrame:
-    runs = runs.set_index("RunID")
-    first = first_step_at(training, THRESHOLD).reindex(runs.index)
-    last = last_logged_step(training).reindex(runs.index)
-    ended = last >= expected_last_step(runs["max_steps"])
-
-    reached = pd.Series(pd.NA, index=runs.index, dtype="boolean")
-    reached[first.notna()] = True
-    reached[first.isna() & ended] = False
-
-    return pd.DataFrame({
-        "last_logged_step": last,
-        "reached_95": reached,
-        "steps_to_95": first.astype("Int64"),
-    })
 
 
 def build_examples(runs: pd.DataFrame, outcomes: pd.DataFrame) -> pd.DataFrame:
