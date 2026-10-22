@@ -16,6 +16,7 @@ Can PPO hyperparameters predict how many training steps a Unity ML-Agents run ne
   - [Building and Specifying a Unity Environment](#building-and-specifying-a-unity-environment)
   - [Running a Single Automated Training Run](#running-a-single-automated-training-run)
   - [Running a hyperparameter batch](#running-a-hyperparameter-batch)
+- [Paired batches](#paired-batches)
 - [Analysis](#analysis)
 - [License](#license)
 
@@ -182,6 +183,22 @@ python tools/batch_run.py --n-configs 2 --seeds 0 1 --max-steps 100000 --env-pat
 ```
 
 
+
+## Paired batches
+
+`tools/paired_batch.py` runs a batch like `batch_run.py`, for runs that pair up: the same configs with another seed or another version of the environment. It names each run `<name>_c<index>_s<seed>`, runs every config with one seed before moving to the next, and first checks that the logged runs of `--pair-with` have the same settings as the configs it draws.
+
+From the repository root, in the ML-Agents environment:
+
+```powershell
+python tools\paired_batch.py --name <name> --config <base-config.yaml> --env-path <built-environment> --batch-seed <batch-seed> --seeds <seeds> --pair-with <name-to-pair-with>
+```
+
+Besides the options of `batch_run.py` (here with defaults of 50 configs, seeds 2 and 3, and batch seed 42), it takes `--pair-with` and `--pair-seeds` (the runs and seeds to check against), `--limit` (stop after this many runs) and `--base-port` (the port of the Unity environment).
+
+It skips logged runs, and runs that left a folder in `results/` without a row; delete the folder to rerun one. To stop a batch, close its window: Ctrl+C only ends the current run.
+
+Several batches can run at once, each in its own window, with its own `--name` and `--base-port`.
 
 ## Analysis
 
