@@ -2,8 +2,10 @@ import argparse
 import csv
 import random
 
+import yaml
+
 from batch_run import sample_configs
-from collect_run import CSV_FILE, RESULTS_DIR, run_and_log_experiment
+from collect_run import CSV_FILE, RESULTS_DIR, resolve_config_path, run_and_log_experiment
 
 
 def logged_runs() -> dict[str, dict]:
@@ -27,6 +29,17 @@ def check_pairing(configs: list[dict], logged: dict[str, dict], pair_with: str, 
     return checked
 
 
+def with_base_port(config_path: str, name: str, base_port: int) -> str:
+    with open(resolve_config_path(config_path)) as f:
+        config = yaml.safe_load(f)
+    config.setdefault("env_settings", {})["base_port"] = base_port
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    out = RESULTS_DIR / f"{name}_base.yaml"
+    with open(out, "w") as f:
+        yaml.safe_dump(config, f, sort_keys=False)
+    return str(out)
+
+
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", required=True)
@@ -40,11 +53,15 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--pair-with", default="3DBall")
     parser.add_argument("--pair-seeds", type=int, nargs="+", default=[2, 3])
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--base-port", type=int, default=None)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    config_path = args.config
+    if args.base_port is not None:
+        config_path = with_base_port(args.config, args.name, args.base_port)
     configs = sample_configs(args.n_configs, random.Random(args.batch_seed))
     logged = logged_runs()
     checked = check_pairing(configs, logged, args.pair_with, args.pair_seeds)
@@ -62,7 +79,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.limit is not None and started >= args.limit:
                 print(f"stopped after {started} runs (--limit)")
                 return 0
-            run_and_log_experiment(args.config, run_id, seed=seed,
+            run_and_log_experiment(config_path, run_id, seed=seed,
                                    tuneables={**config, "max_steps": args.max_steps},
                                    threshold=args.threshold, env_path=args.env_path)
             started += 1
