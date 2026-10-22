@@ -1,6 +1,7 @@
 data = "data/group10.csv"
 target = "steps_to_95"
 log_target = true
+split_by = "ball"
 features = [
     "batch_size",
     "buffer_size",

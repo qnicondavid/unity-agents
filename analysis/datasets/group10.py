@@ -24,10 +24,13 @@ HARDWARE = ["cpu_model", "cpu_cores", "ram_gb_total", "gpu_model"]
 
 def read_settings(path: Path, behavior_name: str) -> dict:
     with open(path) as f:
-        behavior = yaml.safe_load(f)["behaviors"][behavior_name]
+        config = yaml.safe_load(f)
+    behavior = config["behaviors"][behavior_name]
     values = {**behavior, **behavior["hyperparameters"], **behavior["network_settings"]}
     settings = {name: values[name] for name in SETTINGS}
-    return {"training_type": behavior["trainer_type"], **settings, "max_steps": behavior["max_steps"]}
+    ball = "random" if config.get("environment_parameters") else "fixed"
+    return {"training_type": behavior["trainer_type"], "ball": ball, **settings,
+            "max_steps": behavior["max_steps"]}
 
 
 def read_runs(log: Path, configs: Path) -> pd.DataFrame:
@@ -55,7 +58,7 @@ def select_runs(runs: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_examples(runs: pd.DataFrame, outcomes: pd.DataFrame) -> pd.DataFrame:
-    columns = ["RunID", "training_type", "game_name", *SETTINGS, "max_steps", "seed", *HARDWARE]
+    columns = ["RunID", "training_type", "game_name", "ball", *SETTINGS, "max_steps", "seed", *HARDWARE]
     examples = runs[columns].join(outcomes, on="RunID")
     return examples.convert_dtypes()
 
@@ -73,7 +76,7 @@ def main(argv: list[str] | None = None) -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     examples.to_csv(args.out, index=False, lineterminator="\n")
     print(f"{len(examples)} runs written to {args.out}")
-    print(outcomes["reached_95"].value_counts(dropna=False).to_string())
+    print(examples.groupby("ball")["reached_95"].value_counts(dropna=False).to_string())
     return 0
 
 
