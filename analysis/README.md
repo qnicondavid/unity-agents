@@ -70,7 +70,11 @@ Each dataset has a script in `datasets/` that writes a CSV to `data/`. A config 
 
 ### Group 10
 
-`analysis/datasets/group10.py` reads our run log (`data/group10_2026.csv`), the ML-Agents config of each logged run (`data/configs/`) and its training curve (`data/curves/`), and writes `data/group10.csv`: one row per PPO run on 3DBall with a budget of 500k steps (100 runs). The four 100k test runs in the log are left out.
+`analysis/datasets/group10.py` reads our run log (`data/group10_2026.csv`), the ML-Agents config of each logged run (`data/configs/`) and its training curve (`data/curves/`), and writes `data/group10.csv`: one row per PPO run on 3DBall with a budget of 500k steps (600 runs). The four 100k test runs in the log are left out.
+
+The runs come from four batches of 50 configs, drawn with batch seeds 42 to 45. Each config ran with both balls. The fixed ball has mass 1 and scale 1 (ML-Agents' `config/ppo/3DBall.yaml`). The random ball gets a new mass between 0.5 and 10 and a new scale between 0.75 and 3 at the start of every episode (`config/ppo/3DBall_randomize.yaml`). Batches 42 and 43 ran with seeds 2 and 3, and batches 44 and 45 with seed 2, so each ball has 300 runs. The `ball` column is `random` when the run's config has an `environment_parameters` block, and `fixed` otherwise.
+
+Batch 42's `c28` and batch 44's `c29` have the same settings. With both balls, their seed-2 runs have identical curves, so the CSV holds that run twice for each ball. Since `group10_steps_to_95.toml` groups runs by their settings, the two copies always share a fold.
 
 The curves come from the TensorBoard files in `results/`, which exist only on the machine that ran the batch. After a new batch, export the new curves from the repository root, with the ML-Agents virtual environment (`external\ml-agents\venv`) active:
 
@@ -84,7 +88,7 @@ Then build the dataset, with `.venv` active:
 python -m analysis.datasets.group10
 ```
 
-Each row has the run's 12 PPO settings (our batch varies 8 of them), its budget, its seed, the machine it ran on and the same three outcome columns as Group 15, computed the same way (`datasets/outcomes.py`).
+Each row has the run's ball, its 12 PPO settings (our batches vary 8 of them), its budget, its seed, the machine it ran on and the same three outcome columns as Group 15, computed the same way (`datasets/outcomes.py`).
 
 The CSV is committed. Rerunning the script should leave `git diff` empty.
 
@@ -117,7 +121,7 @@ A config sets:
 - `data`: the CSV, relative to the repository root
 - `target`: the column to predict
 - `features`: the columns the model learns from
-- `split_by` (optional): the column whose values each get their own cross-validation (`max_steps` in our split configs, so one per budget); without it, one cross-validation covers all runs
+- `split_by` (optional): the column whose values each get their own cross-validation (`max_steps` in our split Group 15 configs, so one per budget, and `ball` in `group10_steps_to_95.toml`, so one per ball); without it, one cross-validation covers all runs
 - `report_by` (optional): a column to break the results down by (`max_steps` in our pooled configs); the cross-validation stays the same
 - `group_by`: the columns that make up a configuration; runs with the same values always share a fold
 - `[cross_validation]`: `folds` (at most the number of configurations) and `seed`
@@ -173,7 +177,7 @@ The `[tuning]` table lists the values to try for `trees`, `attributes_per_tree` 
 
 The score is the mean absolute error, averaged over the seeds for the two networks.
 
-The configs in `analysis/configs/mlp/` predict `steps_to_95`. Four use Group 15's data, with the plan's 5 settings or all 12, split and pooled like the forest's. `group10_steps_to_95.toml` uses our runs, with the 8 settings our batch varies and no split, since all our runs have the same budget. Only runs that reached 95 have a `steps_to_95`, so only they are used: 805 of Group 15's 1,555 runs and 98 of our 100. The configs take the natural log of the target and of the settings that span a factor of 8 or more (and of `max_steps` in the pooled configs), so an error of 0.1 means a typical prediction is about 10% off.
+The configs in `analysis/configs/mlp/` predict `steps_to_95`. Four use Group 15's data, with the plan's 5 settings or all 12, split and pooled like the forest's. `group10_steps_to_95.toml` uses our runs, with the 8 settings our batches vary, split by `ball`. Only runs that reached 95 have a `steps_to_95`, so only they are used: 805 of Group 15's 1,555 runs, 288 of our 300 fixed-ball runs and 289 of our 300 random-ball runs. The configs take the natural log of the target and of the settings that span a factor of 8 or more (and of `max_steps` in the pooled configs), so an error of 0.1 means a typical prediction is about 10% off.
 
 ### Running the MLP
 
