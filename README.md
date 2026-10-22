@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/hero.gif" alt="Twelve 3DBall agents, each balancing a ball on its head" width="100%">
+  <img src="docs/assets/hero.gif" alt="Twelve 3DBall agents, each balancing a ball on its head" width="678">
 </p>
 
 <p align="center">
