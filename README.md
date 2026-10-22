@@ -1,9 +1,5 @@
 <p align="center">
-  <img src="docs/assets/hero.gif" alt="Twelve 3DBall agents, each balancing a ball on its head" width="678">
-</p>
-
-<p align="center">
-  <img src="docs/assets/title.svg" alt="unity-agents" width="520">
+  <img src="docs/assets/hero.gif" alt="unity-agents: twelve 3DBall agents, each balancing a ball on its head" width="678">
 </p>
 
 Can PPO hyperparameters predict how many training steps a Unity ML-Agents run needs to reach a mean reward threshold? Group 10, BCS2720 Project 2-1 (AI and Machine Learning), Maastricht University. A work in progress.
