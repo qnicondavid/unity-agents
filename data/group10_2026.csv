@@ -1603,7 +1603,6 @@ run_id,environment_name,seed,batch_size,buffer_size,learning_rate,hidden_units,n
 "3DBallRandomize_b51_c48_s2,3DBall,2,256,4096,0.001,128,3,0.3,0.01,5,500000,12000,80.0,108000,True,92.7231,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
 "3DBallRandomize_b51_c49_s2,3DBall,2,256,2048,0.003,128,1,0.2,0.001,5,500000,12000,80.0,120000,True,100.0,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
 "3DBallRandomize_b51_c47_s2,3DBall,2,64,16384,0.0001,256,3,0.3,0.005,8,500000,12000,80.0,108000,True,96.4,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
-
 "3DBall_b49_c00_s3,3DBall,3,64,8192,0.001,64,3,0.3,0.001,3,500000,12000,80.0,72000,True,100.0,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
 "3DBall_b49_c03_s3,3DBall,3,256,8192,0.0003,256,2,0.2,0.01,8,500000,12000,80.0,96000,True,100.0,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
 "3DBall_b49_c01_s3,3DBall,3,64,2048,0.0001,64,1,0.2,0.005,8,500000,12000,80.0,72000,True,100.0,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
@@ -2004,7 +2003,6 @@ run_id,environment_name,seed,batch_size,buffer_size,learning_rate,hidden_units,n
 "3DBallRandomize_b48_c47_s3,3DBall,3,256,8192,0.003,64,2,0.3,0.01,8,500000,12000,80.0,132000,True,100.0,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
 "3DBallRandomize_b48_c46_s3,3DBall,3,32,8192,0.003,256,1,0.1,0.005,5,500000,12000,80.0,168000,True,95.9308,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
 "3DBallRandomize_b48_c49_s3,3DBall,3,32,2048,0.0001,256,3,0.2,0.005,3,500000,12000,80.0,72000,True,100.0,""Intel64 Family 6 Model 165 Stepping 2, GenuineIntel"",12,15.79,N/A"
-
 3DBall_b60_c00_s2,3DBall,2,256,4096,0.0003,256,1,0.2,0.005,8,500000,12000,80.0,84000,True,100.0,arm,10,16.0,N/A
 3DBall_b60_c01_s2,3DBall,2,128,2048,0.001,64,1,0.1,0.01,8,500000,12000,80.0,96000,True,100.0,arm,10,16.0,N/A
 3DBall_b60_c02_s2,3DBall,2,64,2048,0.0001,128,1,0.1,0.01,3,500000,12000,80.0,108000,True,100.0,arm,10,16.0,N/A
