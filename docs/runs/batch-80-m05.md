@@ -53,11 +53,4 @@ Config 5 failed on both balls. Of the six configs that reached 95 on both balls,
 
 Over batches 42 to 60, 89% to 100% of each batch's runs reached 95, with a median of 108,000 to 144,000 steps on the fixed ball and 120,000 to 156,000 on the random ball. Seven configs are too few to compare batch 80 with them yet.
 
-## Problems on the way
 
-1. **Smart App Control** blocked Burst (see above). Unity's editor also logs a Burst JIT error on every start for the same reason; the editor falls back to plain C#.
-2. **The run log had no final newline.** Commit `2c771cb` left `data/group10_2026.csv` without one, so the first row appended here (`3DBall_b80_c00_s2`) landed at the end of `3DBallRandomize_b60_c49_s3`. The line was split again by hand; that is why the log's diff also shows the last batch 60 row.
-3. **`data/group10.csv` was overwritten** in `2c771cb` with a copy of the run log. It was rebuilt with `python -m analysis.datasets.group10`. Against the last correct version, the rebuild only adds 114 rows: the 100 random-ball runs of batch 60 and the 14 here.
-4. **`3DBallRandomize_b60_c00_s2` has no curve** in `data/curves/` (its TensorBoard files are on m03), so its outcome columns in `data/group10.csv` are empty.
-5. **Battery.** The batch started on battery (Balanced power plan, 50% down to 32%) until the charger went in, 11 to 20 minutes later. The c00 runs (822 and 816 s) and the start of the c01 runs ran on battery, which only affects their duration.
-6. **Pause.** Both batches were stopped after config 6 to push this first part. Config 7 had just started; its configs in `data/configs/` were deleted and it reruns from the start.
