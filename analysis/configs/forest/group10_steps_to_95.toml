@@ -1,0 +1,46 @@
+data = "data/group10.csv"
+target = "steps_to_95"
+log_target = true
+split_by = "ball"
+features = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+    "beta",
+    "epsilon",
+    "num_epoch",
+]
+group_by = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+    "beta",
+    "epsilon",
+    "num_epoch",
+]
+
+[forest]
+trees = 100
+attributes_per_tree = 3
+min_leaf = 5
+sampling = "split"
+seed = 1
+
+[cross_validation]
+folds = 10
+seed = 7
+
+[tuning]
+folds = 10
+seed = 1
+report_folds = 10
+report_seed = 11
+trees = [50, 100]
+attributes_per_tree = [2, 3, 4, 6, 8]
+max_depth = [6, 10, "none"]
+min_leaf = [1, 2, 5, 10, 20]
+sampling = ["split", "tree"]
