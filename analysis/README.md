@@ -16,32 +16,38 @@ This folder has the code that builds our datasets and runs the experiments on th
 - [MLP](#mlp)
   - [Running the MLP](#running-the-mlp)
   - [Tuning the MLP](#tuning-the-mlp)
+- [Regression forest](#regression-forest)
+  - [Running the regression forest](#running-the-regression-forest)
+  - [Tuning the regression forest](#tuning-the-regression-forest)
 - [Checks](#checks)
 
 ## Layout
 
 ```
 core/
-  cv.py          folds, cross-validation and metrics
-  experiment.py  configs, data loading, evaluation, results and tuning
+  cv.py               folds, cross-validation and metrics
+  experiment.py       configs, data loading, evaluation, results and tuning
 datasets/
-  group10.py     builds data/group10.csv
-  group15.py     builds data/group15.csv
-  outcomes.py    reached_95 and steps_to_95 from the reward curves
+  group10.py          builds data/group10.csv
+  group15.py          builds data/group15.csv
+  outcomes.py         reached_95 and steps_to_95 from the reward curves
 forest/
-  forest.py      our ID3 forest
-  run.py         cross-validates the forest
-  tune.py        tunes the forest
+  forest.py           our ID3 forest
+  run.py              cross-validates the forest
+  tune.py             tunes the forest
+  regression.py       our regression forest
+  regression_run.py   cross-validates the regression forest
+  regression_tune.py  tunes the regression forest
 mlp/
-  network.py     our MLP
-  run.py         cross-validates the network
-  tune.py        tunes the network
-configs/         experiment settings, one TOML file per experiment
-results/         what each experiment wrote
-requirements.txt the pinned packages
+  network.py          our MLP
+  run.py              cross-validates the network
+  tune.py             tunes the network
+configs/              experiment settings, one TOML file per experiment
+results/              what each experiment wrote
+requirements.txt      the pinned packages
 ```
 
-Each model has its own folder with the model and two scripts, `run.py` and `tune.py`. The code they share is in `core/`. The scripts run as modules from the repository root, for example `python -m analysis.forest.run`.
+Each model has its own folder with the model and two scripts, `run.py` and `tune.py`. The code they share is in `core/`. The scripts run as modules from the repository root, for example `python -m analysis.forest.run`. The regression forest shares `forest/` with the classifier, so its scripts are `regression_run.py` and `regression_tune.py`.
 
 ## Environment
 
@@ -141,7 +147,7 @@ The tuning results go to `analysis/results/<model>/<config name>/tuned_best_mean
 
 ## Forest
 
-`analysis/forest/` predicts `reached_95` with our ID3 forest (`analysis/forest/forest.py`). It also runs scikit-learn's forest on the same folds, as a check. The score is balanced accuracy. Always predicting the more common class gives a balanced accuracy of 0.5.
+`analysis/forest/run.py` predicts `reached_95` with our ID3 forest (`analysis/forest/forest.py`). It also runs scikit-learn's forest on the same folds, as a check. The score is balanced accuracy. Always predicting the more common class gives a balanced accuracy of 0.5.
 
 The four configs in `analysis/configs/forest/` predict `reached_95` from the plan's 5 settings and from all 12. The split configs give each budget its own cross-validation. The pooled ones, ending in `_pooled`, use one cross-validation over all budgets, with `max_steps` as one more feature.
 
@@ -202,6 +208,43 @@ python -m analysis.mlp.tune --config analysis\configs\mlp\steps_to_95_12_setting
 ```
 
 The `[tuning]` table lists the values to try for `hidden_sizes`, `learning_rate`, `batch_size` and `epochs`. Only our network is tuned. The lowest mean error wins, and ties go to fewer layers, then fewer neurons, fewer epochs, larger batches and finally the lower learning rate. The report run then scores all four models, with scikit-learn's network using the chosen settings.
+
+## Regression forest
+
+`analysis/forest/regression.py` predicts `steps_to_95` with a regression version of our ID3 forest. It reuses the bootstrap, the attribute draw and the tree walk from `forest.py`, and changes four things:
+
+- a split is scored by how much it lowers the variance of the target, instead of the entropy
+- a leaf predicts the mean of its runs, instead of the majority class
+- the forest predicts the mean of its trees, instead of the vote
+- a split must leave at least `min_leaf` runs on each side
+
+`sampling` sets how the attributes are drawn. With `"tree"`, each tree draws `attributes_per_tree` of them once, as `forest.py` does. With `"split"`, they are drawn again at every split, as in Breiman's random forest. With all 8 attributes, both are plain bagging.
+
+Each split is found in one pass over the runs sorted by the attribute, with a running count and sum on each side (`best_split_point_fast`). `best_split_point` finds the same split the slow way and is kept as a check. The derivation is in [docs/reading/regression.md](../docs/reading/regression.md).
+
+It also runs scikit-learn's forest on the same folds, as a check: `RandomForestRegressor` for `"split"` and `BaggingRegressor` over decision trees for `"tree"`. The score is the mean absolute error, as for the MLP.
+
+`analysis/configs/forest/group10_steps_to_95.toml` uses the same data, target, settings, groups and fold seeds as the MLP's `group10_steps_to_95.toml`, so the two models' scores compare fold by fold. It takes the natural log of the target only, because a tree splits a logged setting the same way as the original.
+
+### Running the regression forest
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.forest.regression_run --config analysis\configs\forest\group10_steps_to_95.toml
+```
+
+The `[forest]` table sets `trees`, `attributes_per_tree` (at most the number of features), `seed`, and optionally `max_depth` (no limit if it is left out), `min_leaf` (1 if it is left out) and `sampling` (`"split"` if it is left out). `log_target` and `log_features` work as for the MLP.
+
+### Tuning the regression forest
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.forest.regression_tune --config analysis\configs\forest\group10_steps_to_95.toml
+```
+
+The `[tuning]` table lists the values to try for `trees`, `attributes_per_tree`, `max_depth` (with `"none"` for no depth limit), `min_leaf` and `sampling`. The lowest mean error wins, and ties go to the shallower tree, then larger leaves, fewer attributes, more trees and finally `"split"`. The report run then scores both forests with the chosen settings. Our config tries 300 combinations per ball, which took about 14 minutes on m01.
 
 ## Checks
 
