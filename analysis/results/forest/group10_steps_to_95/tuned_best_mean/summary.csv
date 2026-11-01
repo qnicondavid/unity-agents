@@ -1,0 +1,3 @@
+ball,trees,attributes_per_tree,max_depth,min_leaf,sampling,tuning_mean_absolute_error,tuning_se,forest_mean_absolute_error,forest_se,scikit_learn_mean_absolute_error,scikit_learn_se
+fixed,50,6,10,2,split,0.226355,0.007728,0.228422,0.006473,0.227678,0.006746
+random,100,4,none,1,split,0.226949,0.008765,0.230497,0.006447,0.231713,0.006283
