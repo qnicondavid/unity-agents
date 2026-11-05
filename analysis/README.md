@@ -143,7 +143,9 @@ The `[tuning]` table sets:
 - `report_folds` and `report_seed`: the fresh cross-validation used for reporting
 - the values to try for each of the model's settings
 
-The tuning results go to `analysis/results/<model>/<config name>/tuned_best_mean/`: `candidates.csv` has every combination's tuning score and rank, `summary.csv` the chosen setting with its tuning and report scores, and the other files the report run.
+The tuning results go to `analysis/results/<model>/<config name>/tuned_best_mean/`: `candidates.csv` has every combination's tuning score and rank, `summary.csv` the chosen setting with its tuning and report scores, `progress.jsonl` every combination's score on each tuning fold, and the other files the report run. A combination whose training diverged has an empty tuning score and shares the last rank.
+
+`tune.py` saves each finished combination to `progress.jsonl` as it goes. If a tuning stops, running the same command again continues where it stopped, and only the missing combinations run. Values can be added to or removed from the `[tuning]` lists in between. It refuses to continue if the data file or a setting the tuning scores depend on has changed, since the saved scores would no longer match. `--restart` starts over. It is also needed after a change to a model's code, which this check cannot see.
 
 ## Forest
 
@@ -175,7 +177,7 @@ The `[tuning]` table lists the values to try for `trees`, `attributes_per_tree` 
 
 ## MLP
 
-`analysis/mlp/` predicts `steps_to_95` with our network (`analysis/mlp/network.py`): fully connected hidden layers with batch norm and ReLU, trained with plain SGD on the mean squared error. It also scores three other models on the same folds:
+`analysis/mlp/` predicts `steps_to_95` with our network (`analysis/mlp/network.py`): fully connected hidden layers with batch norm, ReLU and optional dropout, trained with plain SGD on the mean squared error. It also scores three other models on the same folds:
 
 - scikit-learn's `MLPRegressor` with the same settings, as a check on our network
 - ridge regression on the same inputs, a linear model
@@ -183,7 +185,9 @@ The `[tuning]` table lists the values to try for `trees`, `attributes_per_tree` 
 
 The score is the mean absolute error, averaged over the seeds for the two networks.
 
-The configs in `analysis/configs/mlp/` predict `steps_to_95`. Four use Group 15's data, with the plan's 5 settings or all 12, split and pooled like the forest's. `group10_steps_to_95.toml` uses our runs, with the 8 settings our batches vary, split by `ball`. Only runs that reached 95 have a `steps_to_95`, so only they are used: 805 of Group 15's 1,555 runs, 1,064 of our 1,107 fixed-ball runs and 1,055 of our 1,107 random-ball runs. The configs take the natural log of the target and of the settings that span a factor of 8 or more (and of `max_steps` in the pooled configs), so an error of 0.1 means a typical prediction is about 10% off.
+`MLPRegressor` has no dropout. With `dropout` above 0, scikit-learn's network trains without it, so it is no longer a check on the same model.
+
+The configs in `analysis/configs/mlp/` predict `steps_to_95`. Four use Group 15's data, with the plan's 5 settings or all 12, split and pooled like the forest's. `group10_steps_to_95.toml` uses our runs, with the 8 settings our batches vary, split by `ball`. `group10_steps_to_95_extended.toml` and `group10_steps_to_95_edges.toml` are the same config with other tuning grids (see [Tuning the MLP](#tuning-the-mlp)). Only runs that reached 95 have a `steps_to_95`, so only they are used: 805 of Group 15's 1,555 runs, 1,064 of our 1,107 fixed-ball runs and 1,055 of our 1,107 random-ball runs. The configs take the natural log of the target and of the settings that span a factor of 8 or more (and of `max_steps` in the pooled configs), so an error of 0.1 means a typical prediction is about 10% off.
 
 ### Running the MLP
 
@@ -193,7 +197,7 @@ From the repository root, with `.venv` active:
 python -m analysis.mlp.run --config analysis\configs\mlp\steps_to_95_12_settings.toml
 ```
 
-The `[mlp]` table sets `hidden_sizes` (one number per hidden layer), `learning_rate`, `batch_size`, `epochs`, `seeds` (each network is trained once per seed), and optionally `dropout`. Three more keys are for the MLP only:
+The `[mlp]` table sets `hidden_sizes` (one number per hidden layer), `learning_rate`, `batch_size`, `epochs`, `seeds` (each network is trained once per seed), and optionally `dropout` (the chance that each hidden neuron is dropped in a training step, 0 if it is left out). Three more keys are for the MLP only:
 
 - `log_target`: `true` takes the natural log of the target
 - `log_features`: the features to take the natural log of
@@ -207,7 +211,11 @@ From the repository root, with `.venv` active:
 python -m analysis.mlp.tune --config analysis\configs\mlp\steps_to_95_12_settings.toml
 ```
 
-The `[tuning]` table lists the values to try for `hidden_sizes`, `learning_rate`, `batch_size` and `epochs`. Only our network is tuned. The lowest mean error wins, and ties go to fewer layers, then fewer neurons, fewer epochs, larger batches and finally the lower learning rate. The report run then scores all four models, with scikit-learn's network using the chosen settings.
+The `[tuning]` table lists the values to try for `hidden_sizes`, `learning_rate`, `batch_size`, `epochs` and `dropout`. All five are needed; `dropout = [0.0]` means no dropout. Only our network is tuned. The lowest mean error wins, and ties go to fewer layers, then fewer neurons, fewer epochs, larger batches, the lower learning rate and finally less dropout. The report run then scores all four models, with scikit-learn's network using the chosen settings.
+
+Our runs were tuned in three steps, one config each. `group10_steps_to_95.toml` chose values at the edges of its grid on both balls, such as the smallest network and the smallest batch. `group10_steps_to_95_extended.toml` tries a value past each of those edges, drops values far from both choices, and adds dropout: 1,125 combinations per ball, which took about 5 hours 45 minutes on m01. Its choices sat at new edges: a batch of 64 on both balls and 480 epochs on the fixed ball. `group10_steps_to_95_edges.toml` keeps one hidden layer of 32 and tries values around and past those choices: 54 combinations per ball, which took about 37 minutes with 12 workers. It contains the extended grid's choices, so its choices are the best of both grids on the tuning folds.
+
+The edges grid's choices still sit at some of its edges, such as 960 epochs on both balls. But they lowered the report error by only about 0.002 on each ball, less than twice the standard error of that difference, so we stopped there. They are the final MLP settings for our runs. Over the three steps, the report error fell from 0.223 to 0.209 on the fixed ball and from 0.227 to 0.211 on the random ball.
 
 ## Regression forest
 
