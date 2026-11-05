@@ -1,7 +1,9 @@
 import argparse
+import hashlib
+import json
 import os
 import tomllib
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from itertools import product
 from pathlib import Path
 
@@ -163,7 +165,7 @@ def grid(tuning: dict, keys: list[str]) -> list[dict]:
 
 
 def choose(scored: list[dict], simplicity, better=max) -> dict:
-    top = better(c["mean"] for c in scored)
+    top = better(c["mean"] for c in scored if not np.isnan(c["mean"]))
     return min((c for c in scored if c["mean"] == top), key=simplicity)
 
 
@@ -174,23 +176,79 @@ def with_settings(config: dict, section: str, candidate: dict, keys: list[str]) 
     return {**config, section: settings, "cross_validation": report}
 
 
-def tune(config: dict, workers: int, keys: list[str], score_candidate) -> list[tuple]:
+def setup_signature(config: dict, keys: list[str]) -> dict:
+    settings = {}
+    for name, value in config.items():
+        if name in ("data", "tuning", "cross_validation"):
+            continue
+        if isinstance(value, dict):
+            value = {key: setting for key, setting in value.items() if key not in keys}
+        settings[name] = value
+    data = Path(config["data"])
+    tuning = {"folds": config["tuning"]["folds"], "seed": config["tuning"]["seed"]}
+    return {"settings": settings, "tuning": tuning, "data": data.name,
+            "data_sha256": hashlib.sha256(data.read_bytes()).hexdigest()}
+
+
+def candidate_key(value, candidate: dict) -> str:
+    return json.dumps([value, candidate], sort_keys=True)
+
+
+def read_progress(path: Path, signature: dict) -> dict | None:
+    entries = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            entries.append(json.loads(line))
+        except json.JSONDecodeError:
+            break
+    if not entries or "setup" not in entries[0]:
+        return None
+    if json.dumps(entries[0]["setup"], sort_keys=True) != json.dumps(signature, sort_keys=True):
+        raise ValueError(f"{path} was written with other settings or data, so it cannot be resumed; "
+                         "run again with --restart to start over")
+    path.write_text("".join(json.dumps(entry) + "\n" for entry in entries), encoding="utf-8")
+    return {candidate_key(entry["split"], entry["candidate"]): entry["scores"] for entry in entries[1:]}
+
+
+def tune(config: dict, workers: int, keys: list[str], score_candidate, progress: Path,
+         restart: bool = False) -> list[tuple]:
     tuning = config["tuning"]
     options = grid(tuning, keys)
     parts = load_groups(config)
-    jobs = []
-    with ProcessPoolExecutor(max_workers=workers) as pool:
+    signature = setup_signature(config, keys)
+    done = None if restart or not progress.exists() else read_progress(progress, signature)
+    if done is None:
+        progress.write_text(json.dumps({"setup": signature}) + "\n", encoding="utf-8")
+        done = {}
+    total = len(parts) * len(options)
+    results, jobs = {}, {}
+    with (ProcessPoolExecutor(max_workers=workers) as pool,
+          open(progress, "a", encoding="utf-8") as log):
         for value, rows, targets, groups, _ in parts:
             folds = group_folds(groups, tuning["folds"], tuning["seed"])
             for candidate in options:
-                job = pool.submit(score_candidate, rows, targets, folds, candidate, config)
-                jobs.append((value, candidate, job))
-        scored = {}
-        for done, (value, candidate, job) in enumerate(jobs, start=1):
-            mean, se = mean_and_se(job.result())
+                key = candidate_key(value, candidate)
+                if key in done:
+                    results[key] = done[key]
+                else:
+                    job = pool.submit(score_candidate, rows, targets, folds, candidate, config)
+                    jobs[job] = (value, candidate, key)
+        if results:
+            print(f"{len(results)} of {total} candidate runs already done in {progress.name}", flush=True)
+        for job in as_completed(jobs):
+            value, candidate, key = jobs[job]
+            scores = [float(score) for score in job.result()]
+            results[key] = scores
+            log.write(json.dumps({"split": value, "candidate": candidate, "scores": scores}) + "\n")
+            log.flush()
+            os.fsync(log.fileno())
+            if len(results) % 50 == 0 or len(results) == total:
+                print(f"{len(results)} of {total} candidate runs done", flush=True)
+    scored = {}
+    for value, _, _, _, _ in parts:
+        for candidate in options:
+            mean, se = mean_and_se(results[candidate_key(value, candidate)])
             scored.setdefault(value, []).append({**candidate, "mean": mean, "se": se})
-            if done % 50 == 0 or done == len(jobs):
-                print(f"{done} of {len(jobs)} candidate runs done", flush=True)
     return [(value, rows, targets, groups, reports, scored[value])
             for value, rows, targets, groups, reports in parts]
 
@@ -204,7 +262,7 @@ def write_tuning(split_by: str, outcomes: list, keys: list[str], metric: str, fo
     candidate_rows, summary_rows = [], []
     for value, scored, chosen, result in outcomes:
         means = pd.Series([c["mean"] for c in scored])
-        ranks = means.rank(ascending=better is min, method="min").astype(int)
+        ranks = means.rank(ascending=better is min, method="min", na_option="bottom").astype(int)
         for c, rank in zip(scored, ranks):
             candidate_rows.append({
                 split_by: value,
@@ -230,6 +288,7 @@ def run_tuning(argv: list[str] | None, model: str, metric: str, evaluate_split, 
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=min(os.cpu_count() or 1, 61))
+    parser.add_argument("--restart", action="store_true")
     args = parser.parse_args(argv)
 
     config = read_config(args.config)
@@ -237,8 +296,11 @@ def run_tuning(argv: list[str] | None, model: str, metric: str, evaluate_split, 
         check(config)
     split_by = split_column(config)
     report_by = config.get("report_by")
+    folder = RESULTS / model / args.config.stem / "tuned_best_mean"
+    folder.mkdir(parents=True, exist_ok=True)
+    tuned = tune(config, args.workers, keys, score_candidate, folder / "progress.jsonl", args.restart)
     outcomes = []
-    for value, rows, targets, groups, reports, scored in tune(config, args.workers, keys, score_candidate):
+    for value, rows, targets, groups, reports, scored in tuned:
         chosen = choose(scored, simplicity, better)
         result = evaluate_split(rows, targets, groups, reports, with_settings(config, model, chosen, keys))
         outcomes.append((value, scored, chosen, result))

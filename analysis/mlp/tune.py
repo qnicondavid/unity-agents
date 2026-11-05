@@ -1,7 +1,7 @@
 from analysis.core import cv, experiment
 from analysis.mlp.run import METRIC, evaluate, own_network, transform
 
-KEYS = ["hidden_sizes", "learning_rate", "batch_size", "epochs"]
+KEYS = ["hidden_sizes", "learning_rate", "batch_size", "epochs", "dropout"]
 
 
 def score_candidate(rows: list, targets: list, folds: list, candidate: dict, config: dict) -> list[float]:
@@ -17,7 +17,7 @@ def score_candidate(rows: list, targets: list, folds: list, candidate: dict, con
 
 def simplicity(candidate: dict) -> tuple:
     return (len(candidate["hidden_sizes"]), sum(candidate["hidden_sizes"]), candidate["epochs"],
-            -candidate["batch_size"], candidate["learning_rate"])
+            -candidate["batch_size"], candidate["learning_rate"], candidate["dropout"])
 
 
 def main(argv: list[str] | None = None) -> int:
