@@ -1,0 +1,142 @@
+run_id,environment_name,seed,reached_threshold,final_mean_reward,steps_to_threshold,cpu_model,cpu_cores,ram_gb_total,gpu_model,batch_size,buffer_size,learning_rate,hidden_units,num_layers,epsilon,beta,num_epoch
+3DBall_b51_c26_s3,3DBall,3,True,100.0,60000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,2048,0.0003,64,2,0.2,0.005,3
+3DBallRandomize_b51_c26_s3,3DBall,3,True,96.7077,72000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,2048,0.0003,64,2,0.2,0.005,3
+3DBall_b51_c26_s3_mac_test,3DBall,3,True,100.0,72000.0,arm,10,16.0,,32,2048,0.0003,64,2,0.2,0.005,3
+3DBallRandomize_b51_c26_s3_mac_test,3DBall,3,True,95.3154,72000.0,arm,10,16.0,,32,2048,0.0003,64,2,0.2,0.005,3
+3DBall_c20_s3,3DBall,3,True,100.0,168000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,32,4096,0.001,64,3,0.2,0.005,8
+3DBallRandomize_c20_s3,3DBall,3,True,100.0,252000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,32,4096,0.001,64,3,0.2,0.005,8
+3DBallRandomize_c20_s3_mac_test,3DBall,3,True,100.0,96000.0,arm,10,16.0,,32,4096,0.001,64,3,0.2,0.005,8
+3DBall_b44_c16_s3,3DBall,3,True,100.0,216000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,4096,0.003,64,3,0.2,0.005,8
+3DBallRandomize_b44_c16_s3,3DBall,3,False,65.7667,,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,4096,0.003,64,3,0.2,0.005,8
+3DBall_b44_c16_s3_mac_test,3DBall,3,True,100.0,360000.0,arm,10,16.0,,32,4096,0.003,64,3,0.2,0.005,8
+3DBall_b43_c45_s3,3DBall,3,True,100.0,156000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,32,4096,0.003,256,1,0.2,0.01,8
+3DBallRandomize_b43_c45_s3,3DBall,3,True,100.0,336000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,32,4096,0.003,256,1,0.2,0.01,8
+3DBall_b43_c45_s3_mac_test,3DBall,3,True,100.0,120000.0,arm,10,16.0,,32,4096,0.003,256,1,0.2,0.01,8
+3DBall_b45_c16_s3,3DBall,3,True,75.6625,276000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,4096,0.003,256,3,0.2,0.005,3
+3DBallRandomize_b45_c16_s3,3DBall,3,False,3.2927,,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,4096,0.003,256,3,0.2,0.005,3
+3DBall_b45_c16_s3_mac_test,3DBall,3,True,100.0,432000.0,arm,10,16.0,,32,4096,0.003,256,3,0.2,0.005,3
+3DBallRandomize_b45_c16_s3_mac_test,3DBall,3,False,50.2042,,arm,10,16.0,,32,4096,0.003,256,3,0.2,0.005,3
+3DBall_b50_c17_s2,3DBall,2,True,92.3308,204000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,8192,0.001,128,3,0.3,0.01,8
+3DBallRandomize_b50_c17_s2,3DBall,2,True,98.0692,168000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,8192,0.001,128,3,0.3,0.01,8
+3DBall_b45_c14_s2,3DBall,2,True,92.3308,204000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,32,8192,0.001,128,3,0.3,0.01,8
+3DBallRandomize_b45_c14_s2,3DBall,2,True,98.0692,168000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,32,8192,0.001,128,3,0.3,0.01,8
+3DBall_b49_c06_s2,3DBall,2,True,100.0,144000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,8192,0.003,64,2,0.3,0.01,3
+3DBallRandomize_b49_c06_s2,3DBall,2,True,85.8572,108000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,8192,0.003,64,2,0.3,0.01,3
+3DBall_b49_c06_s2_mac_test,3DBall,2,True,100.0,96000.0,arm,10,16.0,,32,8192,0.003,64,2,0.3,0.01,3
+3DBallRandomize_b49_c06_s2_mac_test,3DBall,2,True,100.0,120000.0,arm,10,16.0,,32,8192,0.003,64,2,0.3,0.01,3
+3DBallRandomize_b48_c29_s2,3DBall,2,True,100.0,156000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,32,16384,0.0001,256,1,0.3,0.01,3
+3DBall_b48_c29_s2,3DBall,2,True,100.0,144000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,32,16384,0.0001,256,1,0.3,0.01,3
+3DBall_b60_c33_s2,3DBall,2,True,100.0,144000.0,arm,10,16.0,,32,16384,0.0001,256,1,0.3,0.01,3
+3DBallRandomize_b60_c33_s2,3DBall,2,True,100.0,144000.0,arm,10,16.0,,32,16384,0.0001,256,1,0.3,0.01,3
+3DBall_b48_c29_s3,3DBall,3,True,100.0,144000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,16384,0.0001,256,1,0.3,0.01,3
+3DBallRandomize_b48_c29_s3,3DBall,3,True,100.0,168000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,16384,0.0001,256,1,0.3,0.01,3
+3DBall_b60_c33_s3,3DBall,3,True,100.0,144000.0,arm,10,16.0,,32,16384,0.0001,256,1,0.3,0.01,3
+3DBallRandomize_b60_c33_s3,3DBall,3,True,100.0,156000.0,arm,10,16.0,,32,16384,0.0001,256,1,0.3,0.01,3
+3DBall_b48_c10_s3,3DBall,3,True,100.0,240000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,16384,0.003,128,3,0.2,0.001,5
+3DBallRandomize_b48_c10_s3,3DBall,3,True,100.0,240000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,32,16384,0.003,128,3,0.2,0.001,5
+3DBallRandomize_b48_c10_s3_mac_test,3DBall,3,True,100.0,168000.0,arm,10,16.0,,32,16384,0.003,128,3,0.2,0.001,5
+3DBall_b45_c18_s2,3DBall,2,True,100.0,108000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,2048,0.0003,256,3,0.2,0.01,5
+3DBallRandomize_b45_c18_s2,3DBall,2,True,92.5769,180000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,2048,0.0003,256,3,0.2,0.01,5
+3DBall_b45_c18_s2_mac_test,3DBall,2,True,100.0,72000.0,arm,10,16.0,,64,2048,0.0003,256,3,0.2,0.01,5
+3DBall_b46_c45_s2,3DBall,2,True,100.0,72000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,4096,0.0001,256,2,0.2,0.005,5
+3DBallRandomize_b46_c45_s2,3DBall,2,True,100.0,72000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,4096,0.0001,256,2,0.2,0.005,5
+3DBall_b60_c45_s2,3DBall,2,True,100.0,72000.0,arm,10,16.0,,64,4096,0.0001,256,2,0.2,0.005,5
+3DBallRandomize_b60_c45_s2,3DBall,2,True,98.8923,84000.0,arm,10,16.0,,64,4096,0.0001,256,2,0.2,0.005,5
+3DBall_b46_c45_s3,3DBall,3,True,100.0,72000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,4096,0.0001,256,2,0.2,0.005,5
+3DBallRandomize_b46_c45_s3,3DBall,3,True,100.0,84000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,4096,0.0001,256,2,0.2,0.005,5
+3DBall_b60_c45_s3,3DBall,3,True,100.0,72000.0,arm,10,16.0,,64,4096,0.0001,256,2,0.2,0.005,5
+3DBallRandomize_b60_c45_s3,3DBall,3,True,92.35,96000.0,arm,10,16.0,,64,4096,0.0001,256,2,0.2,0.005,5
+3DBall_b49_c33_s2,3DBall,2,True,100.0,168000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,8192,0.001,128,1,0.1,0.01,3
+3DBallRandomize_b49_c33_s2,3DBall,2,True,96.2539,204000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,8192,0.001,128,1,0.1,0.01,3
+3DBall_b49_c33_s2_mac_test,3DBall,2,True,95.8083,168000.0,arm,10,16.0,,64,8192,0.001,128,1,0.1,0.01,3
+3DBallRandomize_b49_c33_s2_mac_test,3DBall,2,True,100.0,180000.0,arm,10,16.0,,64,8192,0.001,128,1,0.1,0.01,3
+3DBall_b51_c31_s2,3DBall,2,True,100.0,168000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,8192,0.001,128,2,0.1,0.01,8
+3DBallRandomize_b51_c31_s2,3DBall,2,True,89.9385,216000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,8192,0.001,128,2,0.1,0.01,8
+3DBall_b44_c34_s2,3DBall,2,True,100.0,168000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,8192,0.001,128,2,0.1,0.01,8
+3DBallRandomize_b44_c34_s2,3DBall,2,True,89.9385,216000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,8192,0.001,128,2,0.1,0.01,8
+3DBall_b43_c44_s3,3DBall,3,True,100.0,252000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,16384,0.0001,64,3,0.1,0.001,3
+3DBallRandomize_b43_c44_s3,3DBall,3,True,100.0,264000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,16384,0.0001,64,3,0.1,0.001,3
+3DBallRandomize_b43_c44_s3_mac_test,3DBall,3,True,100.0,264000.0,arm,10,16.0,,64,16384,0.0001,64,3,0.1,0.001,3
+3DBall_c35_s2,3DBall,2,True,100.0,156000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,16384,0.0001,128,2,0.2,0.005,5
+3DBallRandomize_c35_s2,3DBall,2,True,100.0,168000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,16384,0.0001,128,2,0.2,0.005,5
+3DBall_c35_s2_mac_test,3DBall,2,True,100.0,156000.0,arm,10,16.0,,64,16384,0.0001,128,2,0.2,0.005,5
+3DBall_b48_c40_s3,3DBall,3,True,100.0,144000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,16384,0.0001,256,1,0.3,0.01,3
+3DBallRandomize_b48_c40_s3,3DBall,3,True,100.0,156000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,16384,0.0001,256,1,0.3,0.01,3
+3DBall_c41_s3,3DBall,3,True,100.0,144000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,16384,0.0001,256,1,0.3,0.01,3
+3DBallRandomize_c41_s3,3DBall,3,True,100.0,156000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,64,16384,0.0001,256,1,0.3,0.01,3
+3DBall_b49_c04_s2,3DBall,2,True,100.0,120000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,16384,0.0001,256,2,0.3,0.001,8
+3DBallRandomize_b49_c04_s2,3DBall,2,True,85.8572,108000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,16384,0.0001,256,2,0.3,0.001,8
+3DBall_b49_c04_s2_mac_test,3DBall,2,True,100.0,120000.0,arm,10,16.0,,64,16384,0.0001,256,2,0.3,0.001,8
+3DBallRandomize_b49_c04_s2_mac_test,3DBall,2,True,92.3615,120000.0,arm,10,16.0,,64,16384,0.0001,256,2,0.3,0.001,8
+3DBall_b48_c09_s3,3DBall,3,True,100.0,216000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,16384,0.001,128,3,0.1,0.01,8
+3DBallRandomize_b48_c09_s3,3DBall,3,True,100.0,252000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,64,16384,0.001,128,3,0.1,0.01,8
+3DBall_b48_c09_s3_mac_test,3DBall,3,True,100.0,252000.0,arm,10,16.0,,64,16384,0.001,128,3,0.1,0.01,8
+3DBall_b47_c12_s2,3DBall,2,True,100.0,84000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,2048,0.0001,128,3,0.1,0.005,8
+3DBallRandomize_b47_c12_s2,3DBall,2,True,93.3923,120000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,2048,0.0001,128,3,0.1,0.005,8
+3DBallRandomize_b48_c06_s2,3DBall,2,True,93.3923,120000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,128,2048,0.0001,128,3,0.1,0.005,8
+3DBall_b48_c06_s2,3DBall,2,True,100.0,84000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,128,2048,0.0001,128,3,0.1,0.005,8
+3DBall_b47_c46_s3,3DBall,3,True,100.0,60000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,2048,0.0001,256,3,0.2,0.005,3
+3DBallRandomize_b47_c46_s3,3DBall,3,True,100.0,72000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,2048,0.0001,256,3,0.2,0.005,3
+3DBall_b47_c46_s3_mac_test,3DBall,3,True,100.0,72000.0,arm,10,16.0,,128,2048,0.0001,256,3,0.2,0.005,3
+3DBallRandomize_b47_c46_s3_mac_test,3DBall,3,True,92.4077,72000.0,arm,10,16.0,,128,2048,0.0001,256,3,0.2,0.005,3
+3DBall_b47_c15_s2,3DBall,2,False,63.4105,,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,2048,0.003,256,2,0.3,0.005,5
+3DBallRandomize_b47_c15_s2,3DBall,2,False,5.8382,,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,2048,0.003,256,2,0.3,0.005,5
+3DBall_b47_c15_s2_mac_test,3DBall,2,False,22.1,,arm,10,16.0,,128,2048,0.003,256,2,0.3,0.005,5
+3DBallRandomize_b47_c15_s2_mac_test,3DBall,2,True,85.9572,396000.0,arm,10,16.0,,128,2048,0.003,256,2,0.3,0.005,5
+3DBall_b44_c17_s2,3DBall,2,True,100.0,108000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,128,8192,0.0003,128,1,0.2,0.005,3
+3DBallRandomize_b44_c17_s2,3DBall,2,True,100.0,108000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,128,8192,0.0003,128,1,0.2,0.005,3
+3DBallRandomize_b44_c17_s2_mac_test,3DBall,2,True,100.0,120000.0,arm,10,16.0,,128,8192,0.0003,128,1,0.2,0.005,3
+3DBall_b51_c14_s2,3DBall,2,True,92.4,156000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,8192,0.001,128,3,0.3,0.005,8
+3DBallRandomize_b51_c14_s2,3DBall,2,True,100.0,132000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,8192,0.001,128,3,0.3,0.005,8
+3DBall_b45_c10_s2,3DBall,2,True,92.4,156000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,128,8192,0.001,128,3,0.3,0.005,8
+3DBallRandomize_b45_c10_s2,3DBall,2,True,100.0,132000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,128,8192,0.001,128,3,0.3,0.005,8
+3DBall_b50_c41_s3,3DBall,3,True,100.0,132000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,8192,0.003,256,1,0.2,0.005,8
+3DBallRandomize_b50_c41_s3,3DBall,3,True,100.0,168000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,8192,0.003,256,1,0.2,0.005,8
+3DBall_b50_c41_s3_mac_test,3DBall,3,True,100.0,132000.0,arm,10,16.0,,128,8192,0.003,256,1,0.2,0.005,8
+3DBallRandomize_b50_c41_s3_mac_test,3DBall,3,True,100.0,120000.0,arm,10,16.0,,128,8192,0.003,256,1,0.2,0.005,8
+3DBall_b45_c22_s3,3DBall,3,True,100.0,120000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,8192,0.003,256,1,0.2,0.01,8
+3DBallRandomize_b45_c22_s3,3DBall,3,True,100.0,108000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,128,8192,0.003,256,1,0.2,0.01,8
+3DBall_b45_c22_s3_mac_test,3DBall,3,True,100.0,120000.0,arm,10,16.0,,128,8192,0.003,256,1,0.2,0.01,8
+3DBallRandomize_b45_c22_s3_mac_test,3DBall,3,True,96.3917,132000.0,arm,10,16.0,,128,8192,0.003,256,1,0.2,0.01,8
+3DBall_b45_c48_s2,3DBall,2,True,100.0,168000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,128,16384,0.003,128,1,0.2,0.005,3
+3DBallRandomize_b45_c48_s2,3DBall,2,True,90.1462,192000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,128,16384,0.003,128,1,0.2,0.005,3
+3DBall_b45_c48_s2_mac_test,3DBall,2,True,99.525,168000.0,arm,10,16.0,,128,16384,0.003,128,1,0.2,0.005,3
+3DBallRandomize_b45_c48_s2_mac_test,3DBall,2,True,100.0,192000.0,arm,10,16.0,,128,16384,0.003,128,1,0.2,0.005,3
+3DBall_b47_c34_s2,3DBall,2,True,100.0,84000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,2048,0.0003,128,2,0.1,0.005,3
+3DBallRandomize_b47_c34_s2,3DBall,2,True,100.0,108000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,2048,0.0003,128,2,0.1,0.005,3
+3DBall_b47_c34_s2_mac_test,3DBall,2,True,100.0,84000.0,arm,10,16.0,,256,2048,0.0003,128,2,0.1,0.005,3
+3DBallRandomize_b47_c34_s2_mac_test,3DBall,2,True,100.0,96000.0,arm,10,16.0,,256,2048,0.0003,128,2,0.1,0.005,3
+3DBall_b44_c23_s3,3DBall,3,True,100.0,108000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,2048,0.001,128,2,0.3,0.005,8
+3DBallRandomize_b44_c23_s3,3DBall,3,True,100.0,108000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,2048,0.001,128,2,0.3,0.005,8
+3DBallRandomize_b44_c23_s3_mac_test,3DBall,3,True,92.4769,60000.0,arm,10,16.0,,256,2048,0.001,128,2,0.3,0.005,8
+3DBall_b48_c11_s2,3DBall,2,True,92.9154,72000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,2048,0.001,256,3,0.3,0.001,3
+3DBallRandomize_b48_c11_s2,3DBall,2,True,100.0,216000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,2048,0.001,256,3,0.3,0.001,3
+3DBall_b48_c11_s2_mac_test,3DBall,2,True,100.0,156000.0,arm,10,16.0,,256,2048,0.001,256,3,0.3,0.001,3
+3DBallRandomize_b48_c11_s2_mac_test,3DBall,2,True,100.0,120000.0,arm,10,16.0,,256,2048,0.001,256,3,0.3,0.001,3
+3DBall_b48_c33_s3,3DBall,3,True,93.8833,348000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,8192,0.0001,64,1,0.1,0.001,3
+3DBallRandomize_b48_c33_s3,3DBall,3,True,76.6438,360000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,8192,0.0001,64,1,0.1,0.001,3
+3DBall_b48_c33_s3_mac_test,3DBall,3,True,86.4616,348000.0,arm,10,16.0,,256,8192,0.0001,64,1,0.1,0.001,3
+3DBallRandomize_b48_c33_s3_mac_test,3DBall,3,True,93.7308,408000.0,arm,10,16.0,,256,8192,0.0001,64,1,0.1,0.001,3
+3DBall_b51_c21_s2,3DBall,2,True,100.0,96000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,8192,0.001,128,2,0.2,0.01,3
+3DBallRandomize_b51_c21_s2,3DBall,2,True,99.0692,132000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,8192,0.001,128,2,0.2,0.01,3
+3DBall_b51_c21_s2_mac_test,3DBall,2,True,100.0,96000.0,arm,10,16.0,,256,8192,0.001,128,2,0.2,0.01,3
+3DBallRandomize_b51_c21_s2_mac_test,3DBall,2,True,99.0667,108000.0,arm,10,16.0,,256,8192,0.001,128,2,0.2,0.01,3
+3DBall_b45_c12_s2,3DBall,2,True,92.5077,72000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,8192,0.001,128,3,0.3,0.005,5
+3DBallRandomize_b45_c12_s2,3DBall,2,True,100.0,108000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,8192,0.001,128,3,0.3,0.005,5
+3DBall_b45_c12_s2_mac_test,3DBall,2,True,100.0,72000.0,arm,10,16.0,,256,8192,0.001,128,3,0.3,0.005,5
+3DBallRandomize_b48_c05_s2,3DBall,2,True,100.0,216000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,8192,0.003,64,2,0.3,0.005,8
+3DBall_b48_c05_s2,3DBall,2,True,92.4616,84000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,8192,0.003,64,2,0.3,0.005,8
+3DBall_b48_c05_s2_mac_test,3DBall,2,True,100.0,72000.0,arm,10,16.0,,256,8192,0.003,64,2,0.3,0.005,8
+3DBallRandomize_b48_c05_s2_mac_test,3DBall,2,True,100.0,84000.0,arm,10,16.0,,256,8192,0.003,64,2,0.3,0.005,8
+3DBallRandomize_b48_c30_s2,3DBall,2,True,100.0,120000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,8192,0.003,128,3,0.2,0.005,5
+3DBall_b48_c30_s2,3DBall,2,True,100.0,120000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,8192,0.003,128,3,0.2,0.005,5
+3DBall_b48_c30_s2_mac_test,3DBall,2,True,100.0,132000.0,arm,10,16.0,,256,8192,0.003,128,3,0.2,0.005,5
+3DBallRandomize_b48_c30_s2_mac_test,3DBall,2,True,100.0,192000.0,arm,10,16.0,,256,8192,0.003,128,3,0.2,0.005,5
+3DBall_b46_c10_s3,3DBall,3,True,100.0,120000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,8192,0.003,256,1,0.2,0.001,3
+3DBallRandomize_b46_c10_s3,3DBall,3,True,100.0,132000.0,"Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",12,15.79,,256,8192,0.003,256,1,0.2,0.001,3
+3DBall_b46_c10_s3_mac_test,3DBall,3,True,100.0,120000.0,arm,10,16.0,,256,8192,0.003,256,1,0.2,0.001,3
+3DBallRandomize_b46_c10_s3_mac_test,3DBall,3,True,85.9357,120000.0,arm,10,16.0,,256,8192,0.003,256,1,0.2,0.001,3
+3DBall_b43_c01_s2,3DBall,2,True,100.0,324000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,16384,0.0003,64,1,0.1,0.005,3
+3DBallRandomize_b43_c01_s2,3DBall,2,True,100.0,336000.0,"Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",16,31.37,,256,16384,0.0003,64,1,0.1,0.005,3
+3DBall_b43_c01_s2_mac_test,3DBall,2,True,100.0,324000.0,arm,10,16.0,,256,16384,0.0003,64,1,0.1,0.005,3
+3DBallRandomize_b43_c01_s2_mac_test,3DBall,2,True,100.0,336000.0,arm,10,16.0,,256,16384,0.0003,64,1,0.1,0.005,3
