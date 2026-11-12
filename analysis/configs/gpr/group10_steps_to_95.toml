@@ -1,0 +1,47 @@
+data = "data/group10.csv"
+target = "steps_to_95"
+log_target = true
+split_by = "ball"
+features = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+    "beta",
+    "epsilon",
+    "num_epoch",
+]
+log_features = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "beta",
+]
+group_by = [
+    "batch_size",
+    "buffer_size",
+    "learning_rate",
+    "hidden_units",
+    "num_layers",
+    "beta",
+    "epsilon",
+    "num_epoch",
+]
+
+[gpr]
+kernel = "matern52"
+ard = true
+steps = 200
+
+[cross_validation]
+folds = 10
+seed = 7
+
+[tuning]
+folds = 10
+seed = 1
+report_folds = 10
+report_seed = 11
+kernel = ["rbf", "matern52", "matern32"]
+ard = [false, true]

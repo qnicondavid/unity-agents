@@ -1,0 +1,3 @@
+ball,kernel,ard,tuning_mean_absolute_error,tuning_se,gpr_mean_absolute_error,gpr_se,scikit_learn_mean_absolute_error,scikit_learn_se
+fixed,matern32,True,0.207119,0.008788,0.20563,0.004695,0.20563,0.004695
+random,matern32,True,0.199951,0.004157,0.200958,0.005141,0.200956,0.005141

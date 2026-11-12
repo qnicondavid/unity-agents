@@ -19,6 +19,9 @@ This folder has the code that builds our datasets and runs the experiments on th
 - [Regression forest](#regression-forest)
   - [Running the regression forest](#running-the-regression-forest)
   - [Tuning the regression forest](#tuning-the-regression-forest)
+- [GPR](#gpr)
+  - [Running the GPR](#running-the-gpr)
+  - [Tuning the GPR](#tuning-the-gpr)
 - [Checks](#checks)
 
 ## Layout
@@ -42,6 +45,10 @@ mlp/
   network.py          our MLP
   run.py              cross-validates the network
   tune.py             tunes the network
+gpr/
+  gpr.py              our Gaussian process regression
+  run.py              cross-validates the GPR
+  tune.py             tunes the GPR
 configs/              experiment settings, one TOML file per experiment
 results/              what each experiment wrote
 requirements.txt      the pinned packages
@@ -253,6 +260,40 @@ python -m analysis.forest.regression_tune --config analysis\configs\forest\group
 ```
 
 The `[tuning]` table lists the values to try for `trees`, `attributes_per_tree`, `max_depth` (with `"none"` for no depth limit), `min_leaf` and `sampling`. The lowest mean error wins, and ties go to the shallower tree, then larger leaves, fewer attributes, more trees and finally `"split"`. The report run then scores both forests with the chosen settings. Our config tries 300 combinations per ball, which took about 14 minutes on m01.
+
+## GPR
+
+`analysis/gpr/` predicts `steps_to_95` with our Gaussian process regression (`analysis/gpr/gpr.py`). To predict a config, it takes a weighted sum of the training runs' targets, and runs whose settings are close to the config's count the most. A kernel sets how fast the weight falls as two configs get further apart. Each prediction also comes with a standard deviation (`predict(..., return_std=True)`), which the scripts do not use yet. It also scores scikit-learn's `GaussianProcessRegressor` with the same kernel on the same folds, as a check. The score is the mean absolute error, as for the MLP.
+
+The kernel has a length scale for each setting (`ard = true`) or one for all of them, a signal variance and a noise variance. The noise variance is the part of a run's result that its settings cannot explain, such as the gap between seeds 2 and 3 of the same config. Our GPR scales each feature and the target to mean 0 and standard deviation 1, then picks these values by maximizing the log marginal likelihood of the training runs, with L-BFGS on gradients from torch. So they need no cross-validation. At the same kernel values, its log marginal likelihood and predictions match scikit-learn's to about 1e-10. The comments in the code follow Rasmussen and Williams (2006), *Gaussian Processes for Machine Learning*.
+
+`analysis/configs/gpr/group10_steps_to_95.toml` uses the same data, target, settings, logs, groups and fold seeds as the MLP's `group10_steps_to_95.toml`, so the models' scores compare fold by fold. Unlike for the forest, taking the log of the wide settings matters here, because the GPR works on distances.
+
+### Running the GPR
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.gpr.run --config analysis\configs\gpr\group10_steps_to_95.toml
+```
+
+The `[gpr]` table sets `kernel` (`"rbf"`, `"matern52"` or `"matern32"`; `"matern52"` if it is left out), `ard` (`true` if it is left out) and `steps`, the most L-BFGS iterations (200 if it is left out). `log_target` and `log_features` work as for the MLP.
+
+Besides `folds.csv`, it writes `length_scales.csv`: what our GPR learns from all runs of each split. A short length scale means the result changes quickly with that setting, so the setting matters more. A very long one means it barely matters. The length scales are in standard deviations of each (logged) setting. `noise_sd` is how far runs land from what their settings predict, and `signal_sd` how far the settings move the result, both in units of the logged target.
+
+### Tuning the GPR
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.gpr.tune --config analysis\configs\gpr\group10_steps_to_95.toml
+```
+
+The `[tuning]` table lists the values to try for `kernel` and `ard`. The lowest mean error wins, and ties go to one shared length scale, then to the smoother kernel (`rbf`, then `matern52`, then `matern32`). The report run then scores both GPRs with the chosen settings, and `length_scales.csv` comes from the chosen settings. Our config tries 6 combinations per ball, which took about 12 minutes on m05 with 12 workers.
+
+On both balls it chose `matern32` with a length scale for each setting. The report error is 0.206 on the fixed ball and 0.201 on the random ball. On both balls, `learning_rate` and `buffer_size` have the shortest length scales, and `beta` has by far the longest.
+
+The MLP's `group10_steps_to_95.toml` results use the same 2,400 runs and report folds, and the GPR has the lower error on all 20 folds (by 0.013 on the fixed ball and 0.021 on the random ball). The MLP's extended and edges grids and the regression forest are still scored on 2,214 runs, so their results do not compare with these until they are rerun.
 
 ## Checks
 

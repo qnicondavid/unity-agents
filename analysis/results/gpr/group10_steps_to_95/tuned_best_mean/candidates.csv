@@ -1,0 +1,13 @@
+ball,kernel,ard,tuning_mean_absolute_error,tuning_se,rank,chosen
+fixed,rbf,False,0.216187,0.009166,6,False
+fixed,rbf,True,0.208726,0.009055,3,False
+fixed,matern52,False,0.215021,0.009118,5,False
+fixed,matern52,True,0.207403,0.008965,2,False
+fixed,matern32,False,0.214744,0.00904,4,False
+fixed,matern32,True,0.207119,0.008788,1,True
+random,rbf,False,0.210845,0.004604,6,False
+random,rbf,True,0.203122,0.004175,3,False
+random,matern52,False,0.208928,0.004654,5,False
+random,matern52,True,0.200335,0.004171,2,False
+random,matern32,False,0.208917,0.004793,4,False
+random,matern32,True,0.199951,0.004157,1,True

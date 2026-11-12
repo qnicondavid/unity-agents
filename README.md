@@ -51,6 +51,7 @@ analysis/        ML code and its pinned requirements
   datasets/      scripts that build data/
   forest/        our ID3 forest, its runner and its tuner
   mlp/           our MLP, its runner and its tuner
+  gpr/           our Gaussian process regression, its runner and its tuner
   configs/       experiment settings, one TOML file per experiment
   results/       what each experiment wrote
 data/            our run log and the datasets built by analysis/datasets/
