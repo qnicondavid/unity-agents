@@ -22,6 +22,10 @@ This folder has the code that builds our datasets and runs the experiments on th
 - [GPR](#gpr)
   - [Running the GPR](#running-the-gpr)
   - [Tuning the GPR](#tuning-the-gpr)
+- [kNN](#knn)
+  - [Running the kNN](#running-the-knn)
+  - [Tuning the kNN](#tuning-the-knn)
+- [Temperature](#temperature)
 - [Checks](#checks)
 
 ## Layout
@@ -49,12 +53,18 @@ gpr/
   gpr.py              our Gaussian process regression
   run.py              cross-validates the GPR
   tune.py             tunes the GPR
+knn/
+  knn.py              our kNN
+  run.py              cross-validates the kNN
+  tune.py             tunes the kNN
+temperature/
+  cells.py            groups our runs by learning rate and batch size
 configs/              experiment settings, one TOML file per experiment
 results/              what each experiment wrote
 requirements.txt      the pinned packages
 ```
 
-Each model has its own folder with the model and two scripts, `run.py` and `tune.py`. The code they share is in `core/`. The scripts run as modules from the repository root, for example `python -m analysis.forest.run`. The regression forest shares `forest/` with the classifier, so its scripts are `regression_run.py` and `regression_tune.py`.
+Each model has its own folder with the model and two scripts, `run.py` and `tune.py`. The code they share is in `core/`. The scripts run as modules from the repository root, for example `python -m analysis.forest.run`. The regression forest shares `forest/` with the classifier, so its scripts are `regression_run.py` and `regression_tune.py`. `temperature/` holds no model, only the script behind the [temperature tables](#temperature).
 
 ## Environment
 
@@ -220,9 +230,9 @@ python -m analysis.mlp.tune --config analysis\configs\mlp\steps_to_95_12_setting
 
 The `[tuning]` table lists the values to try for `hidden_sizes`, `learning_rate`, `batch_size`, `epochs` and `dropout`. All five are needed; `dropout = [0.0]` means no dropout. Only our network is tuned. The lowest mean error wins, and ties go to fewer layers, then fewer neurons, fewer epochs, larger batches, the lower learning rate and finally less dropout. The report run then scores all four models, with scikit-learn's network using the chosen settings.
 
-Our runs were tuned in three steps, one config each. `group10_steps_to_95.toml` chose values at the edges of its grid on both balls, such as the smallest network and the smallest batch. `group10_steps_to_95_extended.toml` tries a value past each of those edges, drops values far from both choices, and adds dropout: 1,125 combinations per ball, which took about 5 hours 45 minutes on m01. Its choices sat at new edges: a batch of 64 on both balls and 480 epochs on the fixed ball. `group10_steps_to_95_edges.toml` keeps one hidden layer of 32 and tries values around and past those choices: 54 combinations per ball, which took about 37 minutes with 12 workers. It contains the extended grid's choices, so its choices are the best of both grids on the tuning folds.
+Our runs were tuned in three steps, one config each. We built the second and third grids from earlier tunings on fewer runs, then reran all three on the 2,400 runs. The numbers here are from the reruns. `group10_steps_to_95.toml` chose values at the edges of its grid: the smallest batch on both balls, and the smallest network and the most epochs on the fixed ball. `group10_steps_to_95_extended.toml` tries values past those edges, drops a few others and adds dropout: 1,125 combinations per ball, which took about 9 hours 30 minutes on m01. On both balls it chose one hidden layer of 32, a learning rate of 0.03, 480 epochs and dropout 0.1, with a batch of 64 on the fixed ball and 32 on the random ball. `group10_steps_to_95_edges.toml` keeps one hidden layer of 32 and tries larger batches, more epochs and dropout around 0.1: 54 combinations per ball, which took about 44 minutes on m01. Its choices have a lower tuning error than the extended grid's on both balls.
 
-The edges grid's choices still sit at some of its edges, such as 960 epochs on both balls. But they lowered the report error by only about 0.002 on each ball, less than twice the standard error of that difference, so we stopped there. They are the final MLP settings for our runs. Over the three steps, the report error fell from 0.223 to 0.209 on the fixed ball and from 0.227 to 0.211 on the random ball.
+It chose a learning rate of 0.03 and 960 epochs on both balls, with a batch of 128 and dropout 0.1 on the fixed ball and a batch of 64 and dropout 0.05 on the random ball. These still sit at some of its edges, such as 960 epochs on both balls. But compared with the extended grid's choices, they lowered the report error by only 0.0002 on the fixed ball and less than 0.0001 on the random ball, far less than the standard error of that difference (about 0.001), so we stopped there. They are the final MLP settings for our runs. Over the three steps, the report error fell from 0.218 to 0.212 on the fixed ball and from 0.222 to 0.212 on the random ball.
 
 ## Regression forest
 
@@ -259,7 +269,7 @@ From the repository root, with `.venv` active:
 python -m analysis.forest.regression_tune --config analysis\configs\forest\group10_steps_to_95.toml
 ```
 
-The `[tuning]` table lists the values to try for `trees`, `attributes_per_tree`, `max_depth` (with `"none"` for no depth limit), `min_leaf` and `sampling`. The lowest mean error wins, and ties go to the shallower tree, then larger leaves, fewer attributes, more trees and finally `"split"`. The report run then scores both forests with the chosen settings. Our config tries 300 combinations per ball, which took about 14 minutes on m01.
+The `[tuning]` table lists the values to try for `trees`, `attributes_per_tree`, `max_depth` (with `"none"` for no depth limit), `min_leaf` and `sampling`. The lowest mean error wins, and ties go to the shallower tree, then larger leaves, fewer attributes, more trees and finally `"split"`. The report run then scores both forests with the chosen settings. Our config tries 300 combinations per ball, which took about 16 minutes on m01.
 
 ## GPR
 
@@ -291,13 +301,84 @@ python -m analysis.gpr.tune --config analysis\configs\gpr\group10_steps_to_95.to
 
 The `[tuning]` table lists the values to try for `kernel` and `ard`. The lowest mean error wins, and ties go to one shared length scale, then to the smoother kernel (`rbf`, then `matern52`, then `matern32`). The report run then scores both GPRs with the chosen settings, and `length_scales.csv` comes from the chosen settings. Our config tries 6 combinations per ball, which took about 12 minutes on m05 with 12 workers.
 
-On both balls it chose `matern32` with a length scale for each setting. The report error is 0.206 on the fixed ball and 0.201 on the random ball. On both balls, `learning_rate` and `buffer_size` have the shortest length scales, and `beta` has by far the longest.
+On both balls it chose `matern32` with a length scale for each setting. The report error is 0.206 on the fixed ball and 0.201 on the random ball. On both balls, `learning_rate` has the shortest length scale and `beta` by far the longest. `buffer_size` comes second on the random ball and third on the fixed ball, just behind `num_layers`.
 
-The MLP's `group10_steps_to_95.toml` results use the same 2,400 runs and report folds, and the GPR has the lower error on all 20 folds (by 0.013 on the fixed ball and 0.021 on the random ball). The MLP's extended and edges grids and the regression forest are still scored on 2,214 runs, so their results do not compare with these until they are rerun.
+The final MLP (the edges grid) and the regression forest are scored on the same 2,400 runs and report folds, so the three models compare fold by fold. The GPR has the lowest error of the three. It is lower than the final MLP's by 0.006 on the fixed ball and 0.011 on the random ball (on 7 and 9 of the 10 folds), and lower than the regression forest's by 0.022 and 0.027 (on all 20 folds).
+
+## kNN
+
+`analysis/knn/` predicts `steps_to_95` with our k-nearest neighbors (`analysis/knn/knn.py`). It scales each setting to mean 0 and standard deviation 1 on the training runs, so no setting counts more because of its units. To predict a config, it finds the `k` training runs whose settings are closest to the config's and takes the mean of their targets. Closeness is the Minkowski distance with power `p`. It also scores scikit-learn's `KNeighborsRegressor` on the same folds, as a check. The score is the mean absolute error, as for the MLP.
+
+With `distance = "gpr"`, it also divides each scaled setting by the length scale our GPR learns for it on the same training runs. A setting with a short length scale then counts more in the distance, as in the GPR. Only the ratios between the length scales change which runs are closest.
+
+<p align="center"><img src="../docs/assets/knn-flowchart.jpg" alt="Handwritten flowchart of the kNN, the kNN with the GPR's distance and the GPR" width="450"></p>
+
+The flowchart shows how the kNN, the kNN with the GPR's distance and the GPR relate. All three scale the settings on the training fold. The kNN gives every setting an equal weight, and the other two use the GPR's length scales. The two kNNs take the mean of the `k` closest runs, and the GPR a weighted sum of all of them.
+
+`analysis/configs/knn/group10_steps_to_95.toml` uses the same data, target, settings, logs, groups and fold seeds as the GPR's `group10_steps_to_95.toml`, so their scores compare fold by fold. As for the GPR, taking the log of the wide settings matters, because the kNN works on distances. `group10_steps_to_95_gpr_distance.toml` is the same config with `distance = "gpr"`.
+
+### Running the kNN
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.knn.run --config analysis\configs\knn\group10_steps_to_95.toml
+```
+
+The `[knn]` table sets:
+
+- `k`: how many of the closest runs to average (5 if it is left out)
+- `p`: the power of the Minkowski distance, at least 1 (2 if it is left out); 1 is the Manhattan distance, 2 the Euclidean distance and `inf` the largest difference in any one setting
+- `distance`: `"standard"` or `"gpr"` (`"standard"` if it is left out)
+- `kernel` and `steps`: for `"gpr"`, the kernel and the most L-BFGS iterations of the GPR behind the distance, as in the `[gpr]` table (`"matern32"` and 200 if they are left out); this GPR always has a length scale for each setting
+
+`log_target` and `log_features` work as for the MLP.
+
+When several runs tie at the k-th place, such as the two seeds of one config, our kNN and scikit-learn's can keep different ones. So their errors are close but not equal. In our results, the mean errors differ by at most 0.0012, and single folds by up to 0.017.
+
+### Tuning the kNN
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.knn.tune --config analysis\configs\knn\group10_steps_to_95.toml
+```
+
+The `[tuning]` table lists the values to try for `k` and `p`. Only our kNN is tuned. The lowest mean error wins, and ties go to more neighbors, then to `p = 2`. The report run then scores both kNNs with the chosen settings. Our config tries 20 combinations per ball, which took under a minute on m01. The GPR-distance config tries only `p = 2`, so 10 combinations per ball. It took about 14 minutes on m01, because each fold first fits a GPR.
+
+With equal weights, it chose `k = 8` and `p = 1` on the fixed ball and `k = 13` and `p = 2` on the random ball. The report error is 0.273 on the fixed ball and 0.276 on the random ball. With the GPR's distance, it chose `k = 20` on the fixed ball and `k = 8` on the random ball, and the report error is 0.256 and 0.260.
+
+The GPR's report error is lower than the kNN's by 0.067 on the fixed ball and 0.075 on the random ball. To see where this lead comes from, `analysis/configs/gpr/group10_steps_to_95_shared_scale.toml` uses one length scale for all settings (`ard = false`). Its tuning grid has only this one setting, so tuning it just gives its report error on the same folds. The four models then differ in two steps: how the settings are weighted and how the targets are averaged.
+
+| Report error, fixed / random | Mean of the `k` closest runs | Weighted sum of all runs |
+|---|---|---|
+| Equal weights | 0.273 / 0.276 (kNN) | 0.213 / 0.208 (GPR, one length scale) |
+| The GPR's length scales | 0.256 / 0.260 (kNN, GPR distance) | 0.206 / 0.201 (GPR) |
+
+The length scales lower the error by 0.017 and 0.016 for the kNN, and by 0.007 on both balls for the GPR, on 7 to 9 of the 10 folds. The weighted sum lowers it by 0.060 and 0.068 with equal weights, and by 0.050 and 0.059 with the length scales, on all 10 folds of both balls. So most of the GPR's lead comes from how it averages, not from how it measures distance.
+
+## Temperature
+
+`analysis/temperature/cells.py` groups our runs by ball, learning rate and batch size. It is a first check of the idea in [docs/reading/temperature.md](../docs/reading/temperature.md) that the learning rate and the batch size act together, like a temperature. For each group, it gives:
+
+- the number of runs and the share that never reached 95
+- the median steps to 95 of the runs that reached it
+- the median gap in ln(`steps_to_95`) between seeds 2 and 3 of the same config, for configs where both reached 95
+- lr/B and lr/√B (lr the learning rate, B the batch size), the two candidate temperatures from the note
+
+It also sums up each learning rate over all batch sizes, and gives the learning rate with the lowest median for each batch size.
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.temperature.cells
+```
+
+It has no config. It reads `data/group10.csv`, prints the tables for each ball and writes `cells.csv`, `by_learning_rate.csv` and `best_learning_rate.csv` to `analysis/results/temperature/`.
+
+On both balls, the runs with a learning rate of 0.003, the highest we tried, need the most steps and most often never reach 95. Larger batches lower that share: from 24.5% with a batch of 32 to 2.5% with a batch of 256 on the fixed ball, and from 26.4% to 3.8% on the random ball.
 
 ## Checks
-
-Ideas for later, once we have our own runs:
 
 - shuffled targets: train on targets shuffled at random; the score should fall to the baseline, which shows that nothing leaks from the test folds into training
 - permutation importance: shuffle one feature at a time in the test folds and measure how much the score drops, which shows the settings a model relies on

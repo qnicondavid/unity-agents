@@ -34,7 +34,7 @@ Sub-questions:
 2. How accurately can different machine learning approaches, particularly MLP regression and random forest regression, predict the number of training steps required to reach the selected reward threshold?
 3. To what extent can we reliably evaluate these predictions while accounting for variation between training runs and potential confounding factors?
 
-For now, our forest predicts whether a run reaches the threshold within its budget (`reached_95`). The random forest regression comes later.
+Our threshold is a mean reward of 95. On our own runs, we predict `steps_to_95`, the number of steps a run needs to reach it, with an MLP, a regression forest, Gaussian process regression (GPR) and k-nearest neighbors (kNN). On Group 15's runs, our ID3 forest predicts whether a run reaches 95 within its budget (`reached_95`). [`analysis/README.md`](analysis/README.md) has the models and their results.
 
 ## Layout
 
@@ -49,9 +49,11 @@ tools/           scripts
 analysis/        ML code and its pinned requirements
   core/          code shared by the experiments
   datasets/      scripts that build data/
-  forest/        our ID3 forest, its runner and its tuner
+  forest/        our ID3 forest and regression forest, their runners and tuners
   mlp/           our MLP, its runner and its tuner
   gpr/           our Gaussian process regression, its runner and its tuner
+  knn/           our kNN, its runner and its tuner
+  temperature/   tables of our runs by learning rate and batch size
   configs/       experiment settings, one TOML file per experiment
   results/       what each experiment wrote
 data/            our run log and the datasets built by analysis/datasets/
