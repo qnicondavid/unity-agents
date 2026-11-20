@@ -206,7 +206,7 @@ def read_progress(path: Path, signature: dict) -> dict | None:
     if json.dumps(entries[0]["setup"], sort_keys=True) != json.dumps(signature, sort_keys=True):
         raise ValueError(f"{path} was written with other settings or data, so it cannot be resumed; "
                          "run again with --restart to start over")
-    path.write_text("".join(json.dumps(entry) + "\n" for entry in entries), encoding="utf-8")
+    path.write_text("".join(json.dumps(entry) + "\n" for entry in entries), encoding="utf-8", newline="\n")
     return {candidate_key(entry["split"], entry["candidate"]): entry["scores"] for entry in entries[1:]}
 
 
@@ -218,12 +218,12 @@ def tune(config: dict, workers: int, keys: list[str], score_candidate, progress:
     signature = setup_signature(config, keys)
     done = None if restart or not progress.exists() else read_progress(progress, signature)
     if done is None:
-        progress.write_text(json.dumps({"setup": signature}) + "\n", encoding="utf-8")
+        progress.write_text(json.dumps({"setup": signature}) + "\n", encoding="utf-8", newline="\n")
         done = {}
     total = len(parts) * len(options)
     results, jobs = {}, {}
     with (ProcessPoolExecutor(max_workers=workers) as pool,
-          open(progress, "a", encoding="utf-8") as log):
+          open(progress, "a", encoding="utf-8", newline="\n") as log):
         for value, rows, targets, groups, _ in parts:
             folds = group_folds(groups, tuning["folds"], tuning["seed"])
             for candidate in options:
