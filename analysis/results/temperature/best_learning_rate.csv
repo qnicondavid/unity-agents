@@ -1,0 +1,9 @@
+ball,batch_size,learning_rate,median_steps
+fixed,32,0.0003,108000.0
+fixed,64,0.0001,102000.0
+fixed,128,0.0003,108000.0
+fixed,256,0.0003,108000.0
+random,32,0.0001,126000.0
+random,64,0.0001,120000.0
+random,128,0.0003,126000.0
+random,256,0.0003,120000.0
