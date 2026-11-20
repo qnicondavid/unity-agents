@@ -1,0 +1,3 @@
+ball,k,p,tuning_mean_absolute_error,tuning_se,knn_mean_absolute_error,knn_se,scikit_learn_mean_absolute_error,scikit_learn_se
+fixed,8,1,0.27093,0.008771,0.272754,0.007205,0.272331,0.007433
+random,13,2,0.275684,0.005976,0.275776,0.006262,0.275882,0.005871

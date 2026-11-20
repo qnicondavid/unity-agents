@@ -1,0 +1,3 @@
+ball,kernel,ard,signal_sd,noise_sd,batch_size,buffer_size,learning_rate,hidden_units,num_layers,beta,epsilon,num_epoch
+fixed,matern32,False,1.708845,0.265421,11.200832,11.200832,11.200832,11.200832,11.200832,11.200832,11.200832,11.200832
+random,matern32,False,1.687639,0.249047,10.364635,10.364635,10.364635,10.364635,10.364635,10.364635,10.364635,10.364635
