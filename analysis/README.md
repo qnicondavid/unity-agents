@@ -25,6 +25,10 @@ This folder has the code that builds our datasets and runs the experiments on th
 - [kNN](#knn)
   - [Running the kNN](#running-the-knn)
   - [Tuning the kNN](#tuning-the-knn)
+- [Gradient boosting](#gradient-boosting)
+  - [Running the boosting](#running-the-boosting)
+  - [Tuning the boosting](#tuning-the-boosting)
+  - [Boosting, MLP and forest](#boosting-mlp-and-forest)
 - [Temperature](#temperature)
 - [Checks](#checks)
 
@@ -57,6 +61,11 @@ knn/
   knn.py              our kNN
   run.py              cross-validates the kNN
   tune.py             tunes the kNN
+boosting/
+  boosting.py         our gradient boosting
+  run.py              cross-validates the boosting
+  tune.py             tunes the boosting
+  compare.py          compares the tuned boosting with the MLP, the forest and the GPR
 temperature/
   cells.py            groups our runs by learning rate and batch size
 configs/              experiment settings, one TOML file per experiment
@@ -356,6 +365,70 @@ The GPR's report error is lower than the kNN's by 0.067 on the fixed ball and 0.
 | The GPR's length scales | 0.256 / 0.260 (kNN, GPR distance) | 0.206 / 0.201 (GPR) |
 
 The length scales lower the error by 0.017 and 0.016 for the kNN, and by 0.007 on both balls for the GPR, on 7 to 9 of the 10 folds. The weighted sum lowers it by 0.060 and 0.068 with equal weights, and by 0.050 and 0.059 with the length scales, on all 10 folds of both balls. So most of the GPR's lead comes from how it averages, not from how it measures distance.
+
+## Gradient boosting
+
+`analysis/boosting/boosting.py` predicts `steps_to_95` with our gradient boosting. It builds regression trees one after the other. The first prediction is the mean of the training runs. Each new tree is fitted to the residuals, what the trees so far got wrong, and its prediction is added after being scaled down by the learning rate. With the squared error, the residuals are the negative gradient of the loss, so this is gradient descent with one tree per step. The comments in the code follow Algorithm 10.3 of Hastie, Tibshirani and Friedman (2009), *The Elements of Statistical Learning*.
+
+The trees are the ones from our regression forest (`build_tree` in `forest/regression.py`), with all 8 attributes at every split and no bootstrap. Compared with the forest, boosting changes four things:
+
+- the trees are built one after the other, not independently
+- each tree is fitted to the residuals, not to the targets
+- the prediction is the mean of the runs plus the sum of the trees, each scaled by the learning rate, instead of the mean of the trees
+- each tree has a depth limit: a forest averages deep trees to lower their variance, and boosting adds smaller trees to lower the bias a step at a time
+
+With `subsample` below 1, each tree sees a random part of the training runs, drawn without replacement (Friedman (2002), "Stochastic gradient boosting").
+
+It also runs scikit-learn's `GradientBoostingRegressor` on the same folds, as a check. With `subsample = 1`, nothing is random, and its predictions match ours to about 1e-13, so the two get the same score on every fold. With `subsample` below 1, the two draw different runs for each tree, so only their mean errors compare. The score is the mean absolute error, as for the MLP.
+
+`analysis/configs/boosting/group10_steps_to_95.toml` uses the same data, target, settings, groups and fold seeds as the regression forest's config, so the models' scores compare fold by fold. `group10_steps_to_95_edges.toml` is the same config with another tuning grid (see [Tuning the boosting](#tuning-the-boosting)). Like the forest, they take the natural log of the target only, because a tree splits a logged setting the same way as the original.
+
+### Running the boosting
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.boosting.run --config analysis\configs\boosting\group10_steps_to_95.toml
+```
+
+The `[boosting]` table sets `trees`, `learning_rate` (above 0, at most 1), `seed`, and optionally `max_depth` (3 if it is left out; boosting needs a depth limit), `min_leaf` (1 if it is left out) and `subsample` (the share of the training runs each tree sees, 1 if it is left out). `log_target` and `log_features` work as for the MLP. The config's `[boosting]` table has `subsample = 1`, so this command is the exact check against scikit-learn.
+
+### Tuning the boosting
+
+From the repository root, with `.venv` active:
+
+```powershell
+python -m analysis.boosting.tune --config analysis\configs\boosting\group10_steps_to_95_edges.toml
+```
+
+The `[tuning]` table lists the values to try for `trees`, `learning_rate`, `max_depth`, `min_leaf` and `subsample`. Only our boosting is tuned. The lowest mean error wins, and ties go to the shallower tree, then larger leaves, fewer trees, the lower learning rate and finally no subsampling. The report run then scores both boostings with the chosen settings.
+
+We tuned in two steps, as for the MLP. Before the first, a quick scan with scikit-learn's boosting on 5 folds (not committed) set the range of the grids. Among the 20 best settings of each ball, those with a learning rate of 0.1 had their lowest error after 60 to 330 trees and got worse with more, and 14 and 19 used `subsample = 0.5` rather than 1 (including the best 11 on both balls). So both grids keep `subsample = 0.5`. `group10_steps_to_95.toml` tries 36 combinations per ball, which took about 31 minutes with 2 workers. On both balls it chose 250 trees, a learning rate of 0.03 and a depth of 6, with leaves of at least 20 runs on the fixed ball and 10 on the random ball. The number of trees, the depth and the leaf size sat at edges of its grid. `group10_steps_to_95_edges.toml` tries deeper trees, fewer and more trees and larger leaves: 27 combinations per ball, which took about 16 minutes with 2 workers. It kept the same choice on the fixed ball. On the random ball it chose 400 trees, a depth of 8 and leaves of 10, which sit at two of its edges again, but its tuning error is only 0.0005 below the first grid's choice, far less than the standard error (about 0.005), so we stopped there. These are the final boosting settings for our runs. We did not try a learning rate below 0.03, the lower edge of both grids, because it needs more trees and our trees are built in plain Python.
+
+The report error is 0.219 on the fixed ball and 0.216 on the random ball. scikit-learn's boosting with the same settings gets 0.220 and 0.217.
+
+### Boosting, MLP and forest
+
+`analysis/boosting/compare.py` pairs the report folds of the tuned boosting with those of the final MLP (`mlp/group10_steps_to_95_edges`), the regression forest and the GPR. All four tunings report on the same 10 folds of each ball, and the script checks that the folds have the same sizes. It writes `comparison.csv` next to the boosting's tuning results.
+
+```powershell
+python -m analysis.boosting.compare --boosting group10_steps_to_95_edges
+```
+
+| Report error (se) | Fixed ball | Random ball |
+|---|---|---|
+| GPR | 0.206 (0.005) | 0.201 (0.005) |
+| MLP | 0.212 (0.005) | 0.212 (0.005) |
+| Boosting | 0.219 (0.005) | 0.216 (0.006) |
+| Regression forest | 0.227 (0.006) | 0.228 (0.005) |
+
+| Boosting compared with | Fixed ball | Random ball |
+|---|---|---|
+| Regression forest | 0.009 lower (se 0.003), on 7 of 10 folds | 0.012 lower (se 0.003), on 8 of 10 folds |
+| MLP | 0.007 higher (se 0.004), lower on 3 of 10 folds | 0.004 higher (se 0.004), lower on 5 of 10 folds |
+| GPR | 0.013 higher (se 0.002), lower on 0 of 10 folds | 0.015 higher (se 0.003), lower on 1 of 10 folds |
+
+The se of a gap is the standard error of the 10 paired fold differences. Boosting beats the regression forest on both balls, by 2.6 and 3.4 standard errors, with the same trees and the same inputs. So, on our runs, adding smaller trees one after the other works better than averaging deep ones. It is behind the MLP, but by less than two standard errors, and it wins on 3 and 5 of the 10 folds, so the two are close. The GPR stays the best of the four on both balls. All four are far below ridge regression (0.293 and 0.297) and the median baseline (0.420 and 0.410).
 
 ## Temperature
 

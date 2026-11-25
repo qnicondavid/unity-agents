@@ -1,0 +1,9 @@
+ball,model,mean_absolute_error,se,minus_boosting,minus_boosting_se,folds_boosting_lower,folds
+fixed,boosting,0.218505,0.005296,,,,
+fixed,mlp,0.211875,0.005097,-0.00663,0.003797,3.0,10.0
+fixed,forest,0.227152,0.00579,0.008646,0.003268,7.0,10.0
+fixed,gpr,0.20563,0.004695,-0.012875,0.002479,0.0,10.0
+random,boosting,0.215971,0.005725,,,,
+random,mlp,0.211698,0.004622,-0.004273,0.003686,5.0,10.0
+random,forest,0.227521,0.005306,0.01155,0.003374,8.0,10.0
+random,gpr,0.200957,0.005141,-0.015014,0.002568,1.0,10.0
