@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>unity-agents · Group 10</title>
+<meta name="description" content="Explorer for Group 10's PPO hyperparameter study on Unity ML-Agents 3DBall.">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  // Apply the saved theme before the first paint, so the page does not flash.
+  try {
+    var t = localStorage.getItem("ua-theme");
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+    if (localStorage.getItem("ua-projector") === "1") document.documentElement.classList.add("projector");
+  } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="shell">
+  <aside class="side" aria-label="Sections">
+    <div class="brand">
+      <span class="brand-name">unity-agents</span>
+      <span class="brand-sub">Group 10 · BCS2720 Project 2-1</span>
+    </div>
+    <nav id="nav" class="nav"></nav>
+    <div class="side-foot">
+      <div class="side-label" id="theme-label">Theme</div>
+      <div class="seg seg-small" id="theme-seg" role="radiogroup" aria-labelledby="theme-label">
+        <button type="button" data-theme-choice="auto" role="radio">Auto</button>
+        <button type="button" data-theme-choice="light" role="radio">Light</button>
+        <button type="button" data-theme-choice="dark" role="radio">Dark</button>
+      </div>
+      <label class="check"><input type="checkbox" id="projector-toggle"> Larger text for projector</label>
+      <button type="button" class="link-btn" id="present-btn">Present the main results (P)</button>
+    </div>
+  </aside>
+  <main id="main" class="main" tabindex="-1"></main>
+</div>
+
+<div id="tour" class="tour" hidden>
+  <div class="tour-bar"><div class="tour-fill" id="tour-fill"></div></div>
+  <div class="tour-row">
+    <span class="tour-count" id="tour-count"></span>
+    <span class="tour-note" id="tour-note" aria-live="polite"></span>
+    <span class="tour-keys"><kbd>←</kbd><kbd>→</kbd> step · <kbd>Esc</kbd> leave</span>
+  </div>
+</div>
+
+<div id="missing" class="missing" hidden>
+  <p><strong>The data files are missing.</strong> From the repository root, with <code>.venv</code> active, run:</p>
+  <pre>python -m gui.export_data</pre>
+</div>
+
+<script src="data/runs.js"></script>
+<script src="data/curves.js"></script>
+<script src="data/results.js"></script>
+<script src="data/models.js" onerror="void 0"></script>
+<script src="vendor/plotly.min.js"></script>
+<script src="js/core.js"></script>
+<script src="js/views/overview.js"></script>
+<script src="js/views/curves.js"></script>
+<script src="js/views/explorer.js"></script>
+<script src="js/views/models.js"></script>
+<script src="js/views/importance.js"></script>
+<script src="js/views/predictor.js"></script>
+<script src="js/views/noise.js"></script>
+<script src="js/views/tuning.js"></script>
+<script src="js/views/sources.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
